@@ -65,10 +65,10 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
 
       {/* Bottom Section */}
       <div className={`px-6 pb-6 pt-6 space-y-3 border-t ${darkMode ? 'border-gray-700' : 'border-emerald-200'}`}>
-        {/* Modo Escuro */}
+        {/* Modo Escuro - Apenas Desktop */}
         <button 
           onClick={() => setDarkMode(!darkMode)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-3 border-2 ${
+          className={`hidden lg:flex w-full items-center justify-center gap-2 px-4 py-3 border-2 ${
             darkMode 
               ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
               : 'border-emerald-500 text-emerald-700 hover:bg-emerald-50'

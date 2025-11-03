@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Check, Menu, X } from 'lucide-react'
+import { Check, Menu, X, Moon, HeartPulse } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import SITPMDashboard from './components/SITPMDashboard'
 import TriagemIA from './components/TriagemIA'
@@ -90,15 +90,34 @@ export default function App() {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className={`fixed top-4 left-4 z-50 p-2 rounded-lg lg:hidden ${
-          darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
-        } shadow-lg`}
-      >
-        {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-      </button>
+      {/* Top Header Mobile/Tablet */}
+      <div className={`fixed top-0 left-0 right-0 h-16 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-md z-40 lg:hidden`}>
+        <div className="flex items-center justify-between h-full px-4">
+          {/* Menu Button */}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className={`p-2 rounded-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}
+          >
+            {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+
+          {/* Logo Center */}
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-lg flex items-center justify-center">
+              <HeartPulse className="w-5 h-5 text-white" strokeWidth={2} />
+            </div>
+            <span className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>SITPM</span>
+          </div>
+
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className={`p-2 rounded-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}
+          >
+            <Moon className="w-6 h-6" />
+          </button>
+        </div>
+      </div>
 
       {/* Overlay para mobile */}
       {sidebarOpen && (
