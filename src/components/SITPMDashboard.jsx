@@ -31,92 +31,10 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
     : consultas.filter(c => c.status === filtroStatus)
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      {/* Sidebar */}
-      <div className={`fixed left-0 top-0 h-full w-52 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
-        {/* Logo */}
-        <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 p-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-white rounded-lg p-2">
-              <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            </div>
-            <div className="text-white">
-              <div className="font-bold text-lg">SITPM</div>
-              <div className="text-xs opacity-90">Sistema Inteligente de Triagem</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Menu */}
-        <div className="p-4">
-          <div className={`text-xs font-semibold mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            MENU PRINCIPAL
-          </div>
-          
-          <nav className="space-y-2">
-            <button className="w-full flex items-center gap-3 px-4 py-3 bg-emerald-500 text-white rounded-lg font-medium">
-              <Clipboard className="w-5 h-5" />
-              Início
-            </button>
-            
-            <button className={`w-full flex items-center gap-3 px-4 py-3 ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'} rounded-lg transition`}>
-              <Clock className="w-5 h-5" />
-              Triagem IA
-            </button>
-            
-            <button className={`w-full flex items-center gap-3 px-4 py-3 ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'} rounded-lg transition`}>
-              <Calendar className="w-5 h-5" />
-              Agendar
-            </button>
-            
-            <button className={`w-full flex items-center gap-3 px-4 py-3 ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'} rounded-lg transition`}>
-              <FileText className="w-5 h-5" />
-              Consultas
-            </button>
-            
-            <button className={`w-full flex items-center gap-3 px-4 py-3 ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'} rounded-lg transition`}>
-              <Clipboard className="w-5 h-5" />
-              Prontuário
-            </button>
-          </nav>
-        </div>
-
-        {/* Bottom Section */}
-        <div className="absolute bottom-4 left-4 right-4 space-y-3">
-          <button 
-            onClick={() => setDarkMode(!darkMode)}
-            className={`w-full flex items-center justify-center gap-2 px-4 py-2 ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-700'} rounded-lg transition`}
-          >
-            <Moon className="w-4 h-4" />
-            Modo Escuro
-          </button>
-          
-          <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg p-3`}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center text-white font-bold">
-                S
-              </div>
-              <div className="flex-1">
-                <div className={`font-medium text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>Sara Sales</div>
-                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Paciente</div>
-              </div>
-            </div>
-          </div>
-          
-          <button className={`w-full flex items-center justify-center gap-2 px-4 py-2 ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'} rounded-lg transition`}>
-            <LogOut className="w-4 h-4" />
-            Sair do Sistema
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="ml-52 p-8">
-        {/* Header */}
-        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6 mb-8`}>
-          <div className="flex items-center gap-4">
+    <div className="p-4 sm:p-6 lg:p-8">
+      {/* Header */}
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 sm:p-6 mb-6 sm:mb-8`}>
+        <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center">
               <HeartPulse className="w-8 h-8 text-white" strokeWidth={2} />
             </div>
@@ -629,6 +547,5 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
           </div>
         )}
       </div>
-    </div>
-  );
+    );
 }
