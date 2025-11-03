@@ -4,6 +4,7 @@ import { Send, Bot, MessageSquare, Plus, User } from 'lucide-react'
 export default function TriagemIA({ darkMode }) {
   const [symptoms, setSymptoms] = useState('')
   const [activeTriagemId, setActiveTriagemId] = useState(1)
+  const [isTyping, setIsTyping] = useState(false)
   const [triagens, setTriagens] = useState([
     {
       id: 1,
@@ -65,19 +66,32 @@ export default function TriagemIA({ darkMode }) {
       text: symptoms
     }
 
-    const botResponse = {
-      id: activeTriagem.messages.length + 2,
-      type: 'bot',
-      text: 'Entendo seus sintomas. Com base nas informações fornecidas, recomendo que você consulte um médico para uma avaliação mais detalhada. Posso ajudá-lo a agendar uma consulta?'
-    }
-
+    // Adiciona mensagem do usuário imediatamente
     setTriagens(triagens.map(t => 
       t.id === activeTriagemId 
-        ? { ...t, messages: [...t.messages, newUserMessage, botResponse] }
+        ? { ...t, messages: [...t.messages, newUserMessage] }
         : t
     ))
 
     setSymptoms('')
+    setIsTyping(true)
+
+    // Simula o bot "digitando" por 1.5-2.5 segundos antes de responder
+    setTimeout(() => {
+      const botResponse = {
+        id: activeTriagem.messages.length + 2,
+        type: 'bot',
+        text: 'Entendo seus sintomas. Com base nas informações fornecidas, recomendo que você consulte um médico para uma avaliação mais detalhada. Posso ajudá-lo a agendar uma consulta?'
+      }
+
+      setTriagens(prev => prev.map(t => 
+        t.id === activeTriagemId 
+          ? { ...t, messages: [...t.messages, botResponse] }
+          : t
+      ))
+
+      setIsTyping(false)
+    }, 1500 + Math.random() * 1000) // 1.5s a 2.5s
   }
 
   return (
@@ -166,34 +180,52 @@ export default function TriagemIA({ darkMode }) {
               </div>
             ) : (
               /* Chat de Mensagens */
-              activeTriagem?.messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-4 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  {message.type === 'bot' && (
+              <>
+                {activeTriagem?.messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex gap-4 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {message.type === 'bot' && (
+                      <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Bot className="w-6 h-6 text-white" />
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-2xl rounded-lg px-4 py-3 ${
+                        message.type === 'bot'
+                          ? darkMode
+                            ? 'bg-gray-800 text-gray-100'
+                            : 'bg-white text-gray-900'
+                          : 'bg-emerald-500 text-white'
+                      }`}
+                    >
+                      <p className="text-sm">{message.text}</p>
+                    </div>
+                    {message.type === 'user' && (
+                      <div className="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <User className="w-6 h-6 text-white" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Indicador de "digitando" */}
+                {isTyping && (
+                  <div className="flex gap-4 justify-start">
                     <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
                       <Bot className="w-6 h-6 text-white" />
                     </div>
-                  )}
-                  <div
-                    className={`max-w-2xl rounded-lg px-4 py-3 ${
-                      message.type === 'bot'
-                        ? darkMode
-                          ? 'bg-gray-800 text-gray-100'
-                          : 'bg-white text-gray-900'
-                        : 'bg-emerald-500 text-white'
-                    }`}
-                  >
-                    <p className="text-sm">{message.text}</p>
-                  </div>
-                  {message.type === 'user' && (
-                    <div className="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <User className="w-6 h-6 text-white" />
+                    <div className={`rounded-lg px-4 py-3 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

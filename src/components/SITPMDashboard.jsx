@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, FileText, Clock, Clipboard, Moon, LogOut } from 'lucide-react';
 
-export default function SITPMDashboard() {
-  const [darkMode, setDarkMode] = useState(false);
+export default function SITPMDashboard({ onNavigate, darkMode }) {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -110,7 +109,10 @@ export default function SITPMDashboard() {
 
         {/* Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className={`${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-lg'} rounded-xl shadow-md p-6 transition cursor-pointer`}>
+          <div 
+            onClick={() => onNavigate('triagem')}
+            className={`${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-lg'} rounded-xl shadow-md p-6 transition cursor-pointer`}
+          >
             <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
               <Clock className="w-6 h-6 text-emerald-600" />
             </div>
@@ -118,7 +120,10 @@ export default function SITPMDashboard() {
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Avaliação inteligente 24/7</p>
           </div>
 
-          <div className={`${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-lg'} rounded-xl shadow-md p-6 transition cursor-pointer`}>
+          <div 
+            onClick={() => onNavigate('agendar')}
+            className={`${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-lg'} rounded-xl shadow-md p-6 transition cursor-pointer`}
+          >
             <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center mb-4">
               <Calendar className="w-6 h-6 text-cyan-600" />
             </div>
@@ -126,7 +131,10 @@ export default function SITPMDashboard() {
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Marque seu atendimento</p>
           </div>
 
-          <div className={`${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-lg'} rounded-xl shadow-md p-6 transition cursor-pointer`}>
+          <div 
+            onClick={() => onNavigate('consultas')}
+            className={`${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-lg'} rounded-xl shadow-md p-6 transition cursor-pointer`}
+          >
             <div className="w-12 h-12 bg-lime-100 rounded-xl flex items-center justify-center mb-4">
               <Calendar className="w-6 h-6 text-lime-600" />
             </div>
@@ -134,7 +142,10 @@ export default function SITPMDashboard() {
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>0 agendamento(s)</p>
           </div>
 
-          <div className={`${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-lg'} rounded-xl shadow-md p-6 transition cursor-pointer`}>
+          <div 
+            onClick={() => onNavigate('prontuario')}
+            className={`${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-lg'} rounded-xl shadow-md p-6 transition cursor-pointer`}
+          >
             <div className="w-12 h-12 bg-lime-100 rounded-xl flex items-center justify-center mb-4">
               <FileText className="w-6 h-6 text-lime-600" />
             </div>
@@ -152,10 +163,18 @@ export default function SITPMDashboard() {
                 <Calendar className={`w-5 h-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
                 <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>Histórico de Consultas</h3>
               </div>
-              <button className="text-emerald-600 text-sm font-medium hover:underline">Ver todas</button>
+              <button 
+                onClick={() => onNavigate('consultas')}
+                className="text-emerald-600 text-sm font-medium hover:underline"
+              >
+                Ver todas
+              </button>
             </div>
             
-            <div className="flex flex-col items-center justify-center py-12">
+            <div 
+              onClick={() => onNavigate('consultas')}
+              className="flex flex-col items-center justify-center py-12 cursor-pointer hover:opacity-80 transition"
+            >
               <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
                 <Calendar className="w-8 h-8 text-emerald-600" />
               </div>
@@ -170,10 +189,18 @@ export default function SITPMDashboard() {
                 <FileText className={`w-5 h-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
                 <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>Registros Médicos</h3>
               </div>
-              <button className="text-emerald-600 text-sm font-medium hover:underline">Ver todos</button>
+              <button 
+                onClick={() => onNavigate('prontuario')}
+                className="text-emerald-600 text-sm font-medium hover:underline"
+              >
+                Ver todos
+              </button>
             </div>
             
-            <div className="flex flex-col items-center justify-center py-12">
+            <div 
+              onClick={() => onNavigate('prontuario')}
+              className="flex flex-col items-center justify-center py-12 cursor-pointer hover:opacity-80 transition"
+            >
               <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
                 <FileText className="w-8 h-8 text-emerald-600" />
               </div>

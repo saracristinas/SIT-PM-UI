@@ -1,13 +1,49 @@
 import React, { useState } from 'react'
 import { Calendar, ArrowLeft, Building2, Video } from 'lucide-react'
 
-export default function Agendar({ darkMode, onBack }) {
+export default function Agendar({ darkMode, onBack, onNavigate, onAgendarConsulta }) {
+  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     datetime: '',
     type: 'presencial',
     medico: '',
     motivo: ''
   })
+
+  const handleSubmit = () => {
+    if (!formData.datetime || !formData.motivo) {
+      alert('Por favor, preencha a data/hora e o motivo da consulta.')
+      return
+    }
+
+    setIsLoading(true)
+
+    // Simula um delay de processamento (1-1.5 segundos)
+    setTimeout(() => {
+      const novaConsulta = {
+        id: Date.now(),
+        dataHora: formData.datetime,
+        tipo: formData.type,
+        medico: formData.medico,
+        motivo: formData.motivo,
+        status: 'agendada'
+      }
+
+      onAgendarConsulta(novaConsulta)
+      setIsLoading(false)
+      onNavigate('consultas')
+    }, 1000 + Math.random() * 500)
+  }
+
+  const handleCancel = () => {
+    setFormData({
+      datetime: '',
+      type: 'presencial',
+      medico: '',
+      motivo: ''
+    })
+    onNavigate('consultas')
+  }
 
   return (
     <div className="p-8">
@@ -153,16 +189,26 @@ export default function Agendar({ darkMode, onBack }) {
           {/* Botões */}
           <div className="flex gap-4 pt-4">
             <button
+              onClick={handleCancel}
+              disabled={isLoading}
               className={`flex-1 px-6 py-3 rounded-lg border ${
                 darkMode
                   ? 'border-gray-600 text-white hover:bg-gray-700'
                   : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-              } font-medium transition`}
+              } font-medium transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               Cancelar
             </button>
-            <button className="flex-1 px-6 py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition">
-              Agendar Consulta
+            <button 
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className={`flex-1 px-6 py-3 rounded-lg font-medium transition ${
+                isLoading
+                  ? 'bg-emerald-300 cursor-not-allowed'
+                  : 'bg-emerald-500 hover:bg-emerald-600'
+              } text-white`}
+            >
+              {isLoading ? 'Agendando...' : 'Agendar Consulta'}
             </button>
           </div>
         </div>

@@ -9,21 +9,34 @@ import Prontuario from './components/Prontuario'
 export default function App() {
   const [darkMode, setDarkMode] = useState(false)
   const [currentPage, setCurrentPage] = useState('inicio')
+  const [consultas, setConsultas] = useState([])
+
+  const handleAgendarConsulta = (novaConsulta) => {
+    setConsultas([...consultas, novaConsulta])
+  }
+
+  const handleEditarConsulta = (consultaId, dadosAtualizados) => {
+    setConsultas(consultas.map(consulta => 
+      consulta.id === consultaId 
+        ? { ...consulta, ...dadosAtualizados }
+        : consulta
+    ))
+  }
 
   const renderPage = () => {
     switch (currentPage) {
       case 'inicio':
-        return <SITPMDashboard darkMode={darkMode} setDarkMode={setDarkMode} setCurrentPage={setCurrentPage} />
+        return <SITPMDashboard darkMode={darkMode} onNavigate={setCurrentPage} />
       case 'triagem':
         return <TriagemIA darkMode={darkMode} />
       case 'agendar':
-        return <Agendar darkMode={darkMode} />
+        return <Agendar darkMode={darkMode} onNavigate={setCurrentPage} onAgendarConsulta={handleAgendarConsulta} />
       case 'consultas':
-        return <Consultas darkMode={darkMode} />
+        return <Consultas darkMode={darkMode} onNavigate={setCurrentPage} consultas={consultas} onEditarConsulta={handleEditarConsulta} />
       case 'prontuario':
         return <Prontuario darkMode={darkMode} />
       default:
-        return <SITPMDashboard darkMode={darkMode} setDarkMode={setDarkMode} setCurrentPage={setCurrentPage} />
+        return <SITPMDashboard darkMode={darkMode} onNavigate={setCurrentPage} />
     }
   }
 
