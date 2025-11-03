@@ -11,11 +11,12 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
 
   const consultasAgendadas = consultas.filter(c => c.status === 'agendada')
   const consultasConcluidas = consultas.filter(c => c.status === 'concluida')
+  const consultasAtivas = consultas.filter(c => c.status !== 'cancelada') // Filtra canceladas
 
   const stats = [
     { label: 'Agendadas', value: consultasAgendadas.length, icon: Clock, color: 'blue' },
     { label: 'Concluídas', value: consultasConcluidas.length, icon: CheckCircle, color: 'emerald' },
-    { label: 'Total', value: consultas.length, icon: Calendar, color: 'gray' }
+    { label: 'Total', value: consultasAtivas.length, icon: Calendar, color: 'gray' } // Usa consultasAtivas
   ]
 
   return (
@@ -79,7 +80,7 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
           </h3>
         </div>
 
-        {consultas.length === 0 ? (
+        {consultasAtivas.length === 0 ? (
           /* Estado Vazio */
           <div className="flex flex-col items-center justify-center py-12">
             <div className="w-24 h-24 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
@@ -101,7 +102,7 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
         ) : (
           /* Lista de Consultas */
           <div className="space-y-4">
-            {consultas.map((consulta) => (
+            {consultasAtivas.map((consulta) => (
               <div
                 key={consulta.id}
                 className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-6 border ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}
@@ -137,8 +138,14 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
                         }`}>
                           {consulta.tipo === 'presencial' ? '🏥 Presencial' : '💻 Online'}
                         </span>
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                          {consulta.status === 'agendada' ? 'Agendada' : 'Concluída'}
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          consulta.status === 'agendada' 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : consulta.status === 'concluida'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-red-700'
+                        }`}>
+                          {consulta.status === 'agendada' ? 'Agendada' : consulta.status === 'concluida' ? 'Concluída' : 'Cancelada'}
                         </span>
                       </div>
                     </div>

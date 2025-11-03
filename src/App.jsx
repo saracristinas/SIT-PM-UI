@@ -51,12 +51,16 @@ export default function App() {
   }
 
   const handleExcluirConsulta = (consultaId) => {
-    setConsultas(consultas.filter(consulta => consulta.id !== consultaId))
+    setConsultas(consultas.map(consulta => 
+      consulta.id === consultaId 
+        ? { ...consulta, status: 'cancelada' }
+        : consulta
+    ))
     
     // Mostrar toast
     setToastMessage({
       title: 'Consulta cancelada!',
-      subtitle: 'A consulta foi removida com sucesso.'
+      subtitle: 'A consulta foi marcada como cancelada.'
     })
     setShowSuccessToast(true)
     
@@ -69,7 +73,7 @@ export default function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'inicio':
-        return <SITPMDashboard darkMode={darkMode} onNavigate={setCurrentPage} />
+        return <SITPMDashboard darkMode={darkMode} onNavigate={setCurrentPage} consultas={consultas} />
       case 'triagem':
         return <TriagemIA darkMode={darkMode} />
       case 'agendar':
@@ -79,7 +83,7 @@ export default function App() {
       case 'prontuario':
         return <Prontuario darkMode={darkMode} />
       default:
-        return <SITPMDashboard darkMode={darkMode} onNavigate={setCurrentPage} />
+        return <SITPMDashboard darkMode={darkMode} onNavigate={setCurrentPage} consultas={consultas} />
     }
   }
 
