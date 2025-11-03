@@ -31,6 +31,8 @@ export default function Agendar({ darkMode, onBack, onNavigate, onAgendarConsult
 
       onAgendarConsulta(novaConsulta)
       setIsLoading(false)
+      
+      // Redirecionar para consultas
       onNavigate('consultas')
     }, 1000 + Math.random() * 500)
   }

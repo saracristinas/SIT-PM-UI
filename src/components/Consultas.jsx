@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
-import { Calendar, CheckCircle, Clock, Eye, Trash2, X, Edit2, Check } from 'lucide-react'
+import { Calendar, CheckCircle, Clock, Eye, Trash2, X, Edit2, AlertTriangle } from 'lucide-react'
 
-export default function Consultas({ darkMode, onNavigate, consultas = [], onEditarConsulta }) {
+export default function Consultas({ darkMode, onNavigate, consultas = [], onEditarConsulta, onExcluirConsulta }) {
   const [selectedConsulta, setSelectedConsulta] = useState(null)
   const [editingConsulta, setEditingConsulta] = useState(null)
+  const [deletingConsulta, setDeletingConsulta] = useState(null)
   const [editForm, setEditForm] = useState({})
   const [isSaving, setIsSaving] = useState(false)
-  const [showSuccessToast, setShowSuccessToast] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const consultasAgendadas = consultas.filter(c => c.status === 'agendada')
   const consultasConcluidas = consultas.filter(c => c.status === 'concluida')
@@ -166,7 +167,8 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
                     >
                       <Edit2 className="w-5 h-5 text-blue-600" />
                     </button>
-                    <button 
+                    <button
+                      onClick={() => setDeletingConsulta(consulta)}
                       className={`p-2 rounded-lg ${darkMode ? 'bg-red-900 hover:bg-red-800' : 'bg-red-100 hover:bg-red-200'} transition`}
                       title="Excluir consulta"
                     >
@@ -366,10 +368,6 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
                       setIsSaving(false)
                       setEditingConsulta(null)
                       setEditForm({})
-                      
-                      // Mostrar toast de sucesso
-                      setShowSuccessToast(true)
-                      setTimeout(() => setShowSuccessToast(false), 3000)
                     }, 800)
                   }}
                   disabled={isSaving}
@@ -387,16 +385,81 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
         </div>
       )}
 
-      {/* Toast de Sucesso */}
-      {showSuccessToast && (
-        <div className="fixed top-4 right-4 z-50 animate-slide-in">
-          <div className="bg-emerald-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px]">
-            <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
-              <Check className="w-5 h-5" />
+      {/* Modal de Confirmação de Exclusão */}
+      {deletingConsulta && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl max-w-md w-full p-6`}>
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Cancelar Consulta
+                </h3>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Tem certeza que deseja cancelar esta consulta? Esta ação não pode ser desfeita.
+                </p>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="font-semibold">Consulta atualizada!</p>
-              <p className="text-sm text-emerald-100">As alterações foram salvas com sucesso.</p>
+
+            <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-4 mb-6`}>
+              <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>
+                Detalhes da consulta:
+              </p>
+              <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'} space-y-1`}>
+                <p>
+                  <span className="font-medium">Data:</span>{' '}
+                  {new Date(deletingConsulta.dataHora).toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </p>
+                <p>
+                  <span className="font-medium">Horário:</span>{' '}
+                  {new Date(deletingConsulta.dataHora).toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+                <p>
+                  <span className="font-medium">Tipo:</span>{' '}
+                  {deletingConsulta.tipo === 'presencial' ? 'Presencial' : 'Online'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeletingConsulta(null)}
+                disabled={isDeleting}
+                className={`flex-1 px-4 py-3 rounded-lg border ${
+                  darkMode
+                    ? 'border-gray-600 text-white hover:bg-gray-700'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                } font-medium transition ${isDeleting ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                Não, manter consulta
+              </button>
+              <button
+                onClick={() => {
+                  setIsDeleting(true)
+                  setTimeout(() => {
+                    onExcluirConsulta(deletingConsulta.id)
+                    setIsDeleting(false)
+                    setDeletingConsulta(null)
+                  }, 800)
+                }}
+                disabled={isDeleting}
+                className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${
+                  isDeleting
+                    ? 'bg-red-300 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700'
+                } text-white`}
+              >
+                {isDeleting ? 'Cancelando...' : 'Sim, cancelar consulta'}
+              </button>
             </div>
           </div>
         </div>

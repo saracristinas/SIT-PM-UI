@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Check } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import SITPMDashboard from './components/SITPMDashboard'
 import TriagemIA from './components/TriagemIA'
@@ -10,9 +11,23 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(false)
   const [currentPage, setCurrentPage] = useState('inicio')
   const [consultas, setConsultas] = useState([])
+  const [showSuccessToast, setShowSuccessToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState({ title: '', subtitle: '' })
 
   const handleAgendarConsulta = (novaConsulta) => {
     setConsultas([...consultas, novaConsulta])
+    
+    // Mostrar toast
+    setToastMessage({
+      title: 'Consulta agendada com sucesso!',
+      subtitle: 'Sua consulta foi registrada.'
+    })
+    setShowSuccessToast(true)
+    
+    // Esconder após 5 segundos
+    setTimeout(() => {
+      setShowSuccessToast(false)
+    }, 5000)
   }
 
   const handleEditarConsulta = (consultaId, dadosAtualizados) => {
@@ -21,6 +36,34 @@ export default function App() {
         ? { ...consulta, ...dadosAtualizados }
         : consulta
     ))
+    
+    // Mostrar toast
+    setToastMessage({
+      title: 'Consulta atualizada!',
+      subtitle: 'As alterações foram salvas com sucesso.'
+    })
+    setShowSuccessToast(true)
+    
+    // Esconder após 5 segundos
+    setTimeout(() => {
+      setShowSuccessToast(false)
+    }, 5000)
+  }
+
+  const handleExcluirConsulta = (consultaId) => {
+    setConsultas(consultas.filter(consulta => consulta.id !== consultaId))
+    
+    // Mostrar toast
+    setToastMessage({
+      title: 'Consulta cancelada!',
+      subtitle: 'A consulta foi removida com sucesso.'
+    })
+    setShowSuccessToast(true)
+    
+    // Esconder após 5 segundos
+    setTimeout(() => {
+      setShowSuccessToast(false)
+    }, 5000)
   }
 
   const renderPage = () => {
@@ -32,7 +75,7 @@ export default function App() {
       case 'agendar':
         return <Agendar darkMode={darkMode} onNavigate={setCurrentPage} onAgendarConsulta={handleAgendarConsulta} />
       case 'consultas':
-        return <Consultas darkMode={darkMode} onNavigate={setCurrentPage} consultas={consultas} onEditarConsulta={handleEditarConsulta} />
+        return <Consultas darkMode={darkMode} onNavigate={setCurrentPage} consultas={consultas} onEditarConsulta={handleEditarConsulta} onExcluirConsulta={handleExcluirConsulta} />
       case 'prontuario':
         return <Prontuario darkMode={darkMode} />
       default:
@@ -51,6 +94,21 @@ export default function App() {
       <div className="ml-52">
         {renderPage()}
       </div>
+
+      {/* Toast de Sucesso Global */}
+      {showSuccessToast && (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+          <div className="bg-emerald-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px]">
+            <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
+              <Check className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold">{toastMessage.title}</p>
+              <p className="text-sm text-emerald-100">{toastMessage.subtitle}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
