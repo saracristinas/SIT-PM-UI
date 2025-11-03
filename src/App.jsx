@@ -95,7 +95,7 @@ export default function App() {
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
       />
-      <div className="ml-52">
+      <div className="ml-64">
         {renderPage()}
       </div>
 

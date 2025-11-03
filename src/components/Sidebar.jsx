@@ -1,39 +1,37 @@
 import React from 'react'
-import { Calendar, FileText, Clock, Clipboard, Moon, LogOut } from 'lucide-react'
+import { Calendar, FileText, Clock, Clipboard, Moon, LogOut, LayoutGrid, Bot, HeartPulse } from 'lucide-react'
 
 export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrentPage }) {
   const menuItems = [
-    { id: 'inicio', label: 'Início', icon: Clipboard },
-    { id: 'triagem', label: 'Triagem IA', icon: Clock },
+    { id: 'inicio', label: 'Início', icon: LayoutGrid },
+    { id: 'triagem', label: 'Triagem IA', icon: Bot },
     { id: 'agendar', label: 'Agendar', icon: Calendar },
     { id: 'consultas', label: 'Consultas', icon: FileText },
     { id: 'prontuario', label: 'Prontuário', icon: Clipboard }
   ]
 
   return (
-    <div className={`fixed left-0 top-0 h-full w-52 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg z-50`}>
+    <div className={`fixed left-0 top-0 h-full w-64 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg z-50 flex flex-col`}>
       {/* Logo */}
-      <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 p-4">
+      <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 p-6">
         <div className="flex items-center gap-3">
-          <div className="bg-white rounded-lg p-2">
-            <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
+          <div className="relative w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl">
+            <HeartPulse className="w-8 h-8 text-emerald-600" strokeWidth={2} />
           </div>
           <div className="text-white">
-            <div className="font-bold text-lg">SITPM</div>
-            <div className="text-xs opacity-90">Sistema Inteligente de Triagem</div>
+            <div className="font-bold text-xl">SITPM</div>
+            <div className="text-xs opacity-90 leading-tight">Sistema Inteligente de<br/>Triagem</div>
           </div>
         </div>
       </div>
 
       {/* Menu */}
-      <div className="p-4">
-        <div className={`text-xs font-semibold mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+      <div className="flex-1 px-6 py-6">
+        <div className="text-xs font-bold mb-4 text-emerald-600 tracking-wide">
           MENU PRINCIPAL
         </div>
         
-        <nav className="space-y-2">
+        <nav className="space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon
             const isActive = currentPage === item.id
@@ -42,16 +40,16 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
               <button
                 key={item.id}
                 onClick={() => setCurrentPage(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
                   isActive
-                    ? 'bg-emerald-500 text-white'
+                    ? 'bg-emerald-500 text-white shadow-md'
                     : darkMode
                     ? 'text-gray-300 hover:bg-gray-700'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <Icon className="w-5 h-5" />
-                {item.label}
+                <span className="text-sm">{item.label}</span>
               </button>
             )
           })}
@@ -59,30 +57,49 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
       </div>
 
       {/* Bottom Section */}
-      <div className="absolute bottom-4 left-4 right-4 space-y-3">
+      <div className="px-6 pb-6 space-y-3">
+        {/* Modo Escuro */}
         <button 
           onClick={() => setDarkMode(!darkMode)}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-2 ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-700'} rounded-lg transition`}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-3 border-2 ${
+            darkMode 
+              ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+              : 'border-emerald-500 text-emerald-700 hover:bg-emerald-50'
+          } rounded-lg transition-all font-medium`}
         >
           <Moon className="w-4 h-4" />
-          Modo Escuro
+          <span className="text-sm">Modo Escuro</span>
         </button>
         
-        <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg p-3`}>
+        {/* User Info */}
+        <div className={`${
+          darkMode ? 'bg-gray-700' : 'bg-gray-50'
+        } rounded-xl p-4 border-2 ${
+          darkMode ? 'border-gray-600' : 'border-gray-100'
+        }`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center text-white font-bold">
+            <div className="w-11 h-11 bg-emerald-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
               S
             </div>
-            <div className="flex-1">
-              <div className={`font-medium text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>Sara Sales</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Paciente</div>
+            <div className="flex-1 min-w-0">
+              <div className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
+                Sara Sales
+              </div>
+              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-emerald-600'}`}>
+                Paciente
+              </div>
             </div>
           </div>
         </div>
         
-        <button className={`w-full flex items-center justify-center gap-2 px-4 py-2 ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'} rounded-lg transition`}>
+        {/* Sair */}
+        <button className={`w-full flex items-center justify-center gap-2 px-4 py-3 ${
+          darkMode 
+            ? 'text-gray-400 hover:bg-gray-700 hover:text-white' 
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        } rounded-lg transition-all`}>
           <LogOut className="w-4 h-4" />
-          Sair do Sistema
+          <span className="text-sm font-medium">Sair do Sistema</span>
         </button>
       </div>
     </div>
