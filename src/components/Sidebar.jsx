@@ -1,7 +1,7 @@
 import React from 'react'
 import { Calendar, FileText, Clock, Clipboard, Moon, LogOut, LayoutGrid, Bot, HeartPulse } from 'lucide-react'
 
-export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrentPage }) {
+export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrentPage, sidebarOpen, setSidebarOpen }) {
   const menuItems = [
     { id: 'inicio', label: 'Início', icon: LayoutGrid },
     { id: 'triagem', label: 'Triagem IA', icon: Bot },
@@ -10,8 +10,15 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
     { id: 'prontuario', label: 'Prontuário', icon: Clipboard }
   ]
 
+  const handleMenuClick = (pageId) => {
+    setCurrentPage(pageId)
+    if (setSidebarOpen) setSidebarOpen(false) // Fecha sidebar no mobile após clicar
+  }
+
   return (
-    <div className={`fixed left-0 top-0 h-full w-64 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg z-50 flex flex-col`}>
+    <div className={`fixed left-0 top-0 h-full w-72 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg z-50 flex flex-col transition-transform duration-300 ${
+      sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+    }`}>
       {/* Logo */}
       <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 p-6">
         <div className="flex items-center gap-3">
@@ -39,10 +46,10 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
             return (
               <button
                 key={item.id}
-                onClick={() => setCurrentPage(item.id)}
+                onClick={() => handleMenuClick(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
                   isActive
-                    ? 'bg-emerald-500 text-white shadow-md'
+                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-md'
                     : darkMode
                     ? 'text-gray-300 hover:bg-gray-700'
                     : 'text-gray-700 hover:bg-gray-50'
@@ -57,7 +64,7 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
       </div>
 
       {/* Bottom Section */}
-      <div className="px-6 pb-6 space-y-3">
+      <div className={`px-6 pb-6 pt-6 space-y-3 border-t ${darkMode ? 'border-gray-700' : 'border-emerald-200'}`}>
         {/* Modo Escuro */}
         <button 
           onClick={() => setDarkMode(!darkMode)}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Check } from 'lucide-react'
+import { Check, Menu, X } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import SITPMDashboard from './components/SITPMDashboard'
 import TriagemIA from './components/TriagemIA'
@@ -13,6 +13,7 @@ export default function App() {
   const [consultas, setConsultas] = useState([])
   const [showSuccessToast, setShowSuccessToast] = useState(false)
   const [toastMessage, setToastMessage] = useState({ title: '', subtitle: '' })
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handleAgendarConsulta = (novaConsulta) => {
     setConsultas([...consultas, novaConsulta])
@@ -89,13 +90,33 @@ export default function App() {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className={`fixed top-4 left-4 z-50 p-2 rounded-lg lg:hidden ${
+          darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
+        } shadow-lg`}
+      >
+        {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Overlay para mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       <Sidebar 
         darkMode={darkMode} 
         setDarkMode={setDarkMode}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
       />
-      <div className="ml-64">
+      <div className="lg:ml-72 pt-16 lg:pt-0">
         {renderPage()}
       </div>
 
