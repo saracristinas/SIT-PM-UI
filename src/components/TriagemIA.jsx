@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, MessageSquare, Plus, Menu, X, Sparkles, AlertCircle, Trash2, Lightbulb, Calendar } from 'lucide-react';
+import { sendMessageToGemini, startTriagem, analyzeSymptomSeverity } from '../services/gemini';
 
 export default function TriagemIA({ darkMode = false }) {
   const [symptoms, setSymptoms] = useState('');
@@ -7,25 +8,47 @@ export default function TriagemIA({ darkMode = false }) {
   const [isTyping, setIsTyping] = useState(false);
   const [showTriagensSidebar, setShowTriagensSidebar] = useState(false);
   const [triagens, setTriagens] = useState([]);
+  const messagesEndRef = useRef(null);
 
   const activeTriagem = triagens.find(t => t.id === activeTriagemId);
 
-  const handleNovaTriagem = () => {
+  // Auto-scroll para a última mensagem
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [activeTriagem?.messages, isTyping]);
+
+  const handleNovaTriagem = async () => {
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const newId = triagens.length > 0 ? Math.max(...triagens.map(t => t.id)) + 1 : 1;
     
+    // Obtém mensagem inicial da IA
+    setIsTyping(true);
+    let initialMessage;
+    try {
+      initialMessage = await startTriagem();
+    } catch (error) {
+      console.error('Erro ao iniciar triagem:', error);
+      initialMessage = 'Olá! 👋 Sou a assistente virtual do MediCenter. Para começar, qual é o seu sintoma predominante? (Ex: dor de cabeça, febre, dor abdominal, etc.)';
+    }
+    setIsTyping(false);
+    
     const newTriagem = {
       id: newId,
-      title: 'Triagem em andamento',
+      title: 'Nova triagem',
       date: `${dateStr} ${timeStr}`,
-      severity: 'MÉDIA',
+      status: 'EM_ANDAMENTO',
+      severity: null,
       messages: [
         {
           id: 1,
           type: 'bot',
-          text: 'Olá! 👋 Sou a assistente virtual do MediCenter. Estou aqui para entender melhor seus sintomas e ajudá-lo(a) a receber o atendimento adequado.\n\nPara começar, pode me contar o que está sentindo?',
+          text: initialMessage,
           time: timeStr
         }
       ]
@@ -45,7 +68,16 @@ export default function TriagemIA({ darkMode = false }) {
     }
   };
 
-  const handleSendMessage = () => {
+  // Função para finalizar triagem e definir a gravidade
+  const handleFinalizarTriagem = (id, severity) => {
+    setTriagens(triagens.map(t => 
+      t.id === id 
+        ? { ...t, status: 'FINALIZADA', severity: severity }
+        : t
+    ));
+  };
+
+  const handleSendMessage = async () => {
     if (!symptoms.trim() || !activeTriagem) return;
 
     const now = new Date();
@@ -58,9 +90,10 @@ export default function TriagemIA({ darkMode = false }) {
       time: timeStr
     };
 
-    // Atualiza o título da triagem com a primeira mensagem do usuário
-    const updatedTitle = activeTriagem.messages.length === 1 
-      ? (symptoms.length > 30 ? symptoms.substring(0, 30) + '...' : symptoms)
+    // A primeira mensagem do usuário define o título (sintoma predominante)
+    const isFirstMessage = activeTriagem.messages.length === 1;
+    const updatedTitle = isFirstMessage 
+      ? symptoms.trim()
       : activeTriagem.title;
 
     setTriagens(triagens.map(t => 
@@ -69,15 +102,38 @@ export default function TriagemIA({ darkMode = false }) {
         : t
     ));
 
+    const userInput = symptoms.trim();
     setSymptoms('');
     setIsTyping(true);
 
-    // Simula resposta do bot
-    setTimeout(() => {
+    try {
+      console.log('📤 Preparando mensagem para IA...');
+      
+      // Converte mensagens para o formato da OpenAI
+      const conversationHistory = activeTriagem.messages
+        .filter(msg => msg.type !== 'bot' || msg.id !== 1) // Remove primeira msg do bot
+        .map(msg => ({
+          role: msg.type === 'user' ? 'user' : 'assistant',
+          content: msg.text
+        }));
+      
+      // Adiciona a nova mensagem do usuário
+      conversationHistory.push({
+        role: 'user',
+        content: userInput
+      });
+
+      console.log('📝 Histórico da conversa:', conversationHistory);
+
+      // Obtém resposta da IA (Gemini)
+      const aiResponse = await sendMessageToGemini(conversationHistory);
+      
+      console.log('✅ Resposta da IA recebida:', aiResponse);
+
       const botResponse = {
         id: activeTriagem.messages.length + 2,
         type: 'bot',
-        text: 'Entendo. Pode me dizer há quanto tempo você está sentindo isso? E a intensidade da dor é leve, moderada ou forte?',
+        text: aiResponse,
         time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
       };
 
@@ -87,8 +143,41 @@ export default function TriagemIA({ darkMode = false }) {
           : t
       ));
 
+      // Após 5+ mensagens, pode analisar gravidade automaticamente
+      if (activeTriagem.messages.length >= 8 && activeTriagem.status === 'EM_ANDAMENTO') {
+        const fullConversation = [...activeTriagem.messages, newUserMessage, botResponse]
+          .map(m => m.text)
+          .join(' ');
+        
+        const severity = analyzeSymptomSeverity(fullConversation);
+        console.log('🔍 Gravidade analisada:', severity);
+        
+        // Pode descomentar para finalizar automaticamente:
+        // handleFinalizarTriagem(activeTriagemId, severity);
+      }
+
+    } catch (error) {
+      console.error('❌ ERRO COMPLETO:', error);
+      console.error('❌ Tipo do erro:', error.name);
+      console.error('❌ Mensagem:', error.message);
+      console.error('❌ Stack:', error.stack);
+      
+      // Fallback em caso de erro
+      const fallbackResponse = {
+        id: activeTriagem.messages.length + 2,
+        type: 'bot',
+        text: `Desculpe, tive um problema ao processar sua mensagem. Erro: ${error.message}. Pode tentar novamente?`,
+        time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      setTriagens(prev => prev.map(t => 
+        t.id === activeTriagemId 
+          ? { ...t, messages: [...t.messages, fallbackResponse] }
+          : t
+      ));
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleFecharChat = () => {
@@ -267,6 +356,9 @@ export default function TriagemIA({ darkMode = false }) {
                     </div>
                   </div>
                 )}
+                
+                {/* Elemento para auto-scroll */}
+                <div ref={messagesEndRef} />
               </div>
             </div>
 
@@ -379,9 +471,21 @@ export default function TriagemIA({ darkMode = false }) {
                   <p className={`font-semibold text-xs sm:text-sm line-clamp-1 flex-1 ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                     {triagem.title}
                   </p>
-                  <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-bold rounded flex-shrink-0">
-                    {triagem.severity}
-                  </span>
+                  {triagem.status === 'EM_ANDAMENTO' ? (
+                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded flex-shrink-0">
+                      EM ANDAMENTO
+                    </span>
+                  ) : (
+                    <span className={`px-2 py-0.5 text-xs font-bold rounded flex-shrink-0 ${
+                      triagem.severity === 'ALTA' 
+                        ? 'bg-red-100 text-red-700'
+                        : triagem.severity === 'MÉDIA'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-green-100 text-green-700'
+                    }`}>
+                      {triagem.severity}
+                    </span>
+                  )}
                 </div>
                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   {triagem.date}
