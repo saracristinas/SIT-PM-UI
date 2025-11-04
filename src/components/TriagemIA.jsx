@@ -1,124 +1,84 @@
 import React, { useState } from 'react';
-import { Send, Bot, User, MessageSquare, Plus, Menu, X, Sparkles, AlertCircle, Trash2 } from 'lucide-react';
+import { Send, Bot, User, MessageSquare, Plus, Menu, X, Sparkles, AlertCircle, Trash2, Lightbulb, Calendar } from 'lucide-react';
 
-export default function TriagemIA() {
-  const [darkMode, setDarkMode] = useState(false);
+export default function TriagemIA({ darkMode = false }) {
   const [symptoms, setSymptoms] = useState('');
-  const [activeTriagemId, setActiveTriagemId] = useState(1);
+  const [activeTriagemId, setActiveTriagemId] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [showTriagensSidebar, setShowTriagensSidebar] = useState(false);
-  const [triagens, setTriagens] = useState([
-    {
-      id: 1,
-      title: 'Triagem - 02/11/2025, 23:2...',
-      date: '03 de nov., 02:22',
-      messages: [
-        {
-          id: 1,
-          type: 'bot',
-          text: 'Olá! 👋 Sou seu assistente de triagem médica. Por favor, descreva seus sintomas em detalhes e vou ajudá-lo com uma avaliação inicial.'
-        }
-      ]
-    },
-    {
-      id: 2,
-      title: 'Triagem - 03/11/2025, 13:2...',
-      date: '03 de nov., 16:28',
-      messages: [
-        {
-          id: 1,
-          type: 'bot',
-          text: 'Olá! 👋 Sou seu assistente de triagem médica. Por favor, descreva seus sintomas em detalhes e vou ajudá-lo com uma avaliação inicial.'
-        }
-      ]
-    },
-    {
-      id: 3,
-      title: 'Triagem - 03/11/2025, 14:3...',
-      date: '03 de nov., 17:37',
-      messages: [
-        {
-          id: 1,
-          type: 'bot',
-          text: 'Olá! 👋 Sou seu assistente de triagem médica. Por favor, descreva seus sintomas em detalhes e vou ajudá-lo com uma avaliação inicial.'
-        }
-      ]
-    },
-    {
-      id: 4,
-      title: 'Triagem - 03/11/2025, 16:5...',
-      date: '03 de nov., 19:51',
-      messages: [
-        {
-          id: 1,
-          type: 'bot',
-          text: 'Olá! 👋 Sou seu assistente de triagem médica. Por favor, descreva seus sintomas em detalhes e vou ajudá-lo com uma avaliação inicial.'
-        }
-      ]
-    }
-  ]);
+  const [triagens, setTriagens] = useState([]);
 
   const activeTriagem = triagens.find(t => t.id === activeTriagemId);
 
   const handleNovaTriagem = () => {
     const now = new Date();
-    const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    const newId = Math.max(...triagens.map(t => t.id)) + 1;
+    const newId = triagens.length > 0 ? Math.max(...triagens.map(t => t.id)) + 1 : 1;
     
     const newTriagem = {
       id: newId,
-      title: `Triagem - ${now.toLocaleDateString('pt-BR')}, ${timeStr}...`,
-      date: `${dateStr}, ${timeStr}`,
+      title: 'Triagem em andamento',
+      date: `${dateStr} ${timeStr}`,
+      severity: 'MÉDIA',
       messages: [
         {
           id: 1,
           type: 'bot',
-          text: 'Olá! 👋 Sou seu assistente de triagem médica. Por favor, descreva seus sintomas em detalhes e vou ajudá-lo com uma avaliação inicial.'
+          text: 'Olá! 👋 Sou a assistente virtual do MediCenter. Estou aqui para entender melhor seus sintomas e ajudá-lo(a) a receber o atendimento adequado.\n\nPara começar, pode me contar o que está sentindo?',
+          time: timeStr
         }
       ]
     };
     
     setTriagens([newTriagem, ...triagens]);
     setActiveTriagemId(newId);
-    setShowTriagensSidebar(false);
+    setSymptoms('');
   };
 
   const handleDeleteTriagem = (id, e) => {
     e.stopPropagation();
-    
     const updatedTriagens = triagens.filter(t => t.id !== id);
     setTriagens(updatedTriagens);
-    
-    // Se deletou a conversa ativa e ainda há outras, seleciona a primeira
-    if (activeTriagemId === id && updatedTriagens.length > 0) {
-      setActiveTriagemId(updatedTriagens[0].id);
+    if (activeTriagemId === id) {
+      setActiveTriagemId(null);
     }
   };
 
   const handleSendMessage = () => {
-    if (!symptoms.trim()) return;
+    if (!symptoms.trim() || !activeTriagem) return;
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
     const newUserMessage = {
       id: activeTriagem.messages.length + 1,
       type: 'user',
-      text: symptoms
+      text: symptoms,
+      time: timeStr
     };
+
+    // Atualiza o título da triagem com a primeira mensagem do usuário
+    const updatedTitle = activeTriagem.messages.length === 1 
+      ? (symptoms.length > 30 ? symptoms.substring(0, 30) + '...' : symptoms)
+      : activeTriagem.title;
 
     setTriagens(triagens.map(t => 
       t.id === activeTriagemId 
-        ? { ...t, messages: [...t.messages, newUserMessage] }
+        ? { ...t, title: updatedTitle, messages: [...t.messages, newUserMessage] }
         : t
     ));
 
     setSymptoms('');
     setIsTyping(true);
 
+    // Simula resposta do bot
     setTimeout(() => {
       const botResponse = {
         id: activeTriagem.messages.length + 2,
         type: 'bot',
-        text: 'Entendo seus sintomas. Com base nas informações fornecidas, recomendo que você consulte um médico para uma avaliação mais detalhada. Posso ajudá-lo a agendar uma consulta? 🩺'
+        text: 'Entendo. Pode me dizer há quanto tempo você está sentindo isso? E a intensidade da dor é leve, moderada ou forte?',
+        time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
       };
 
       setTriagens(prev => prev.map(t => 
@@ -128,301 +88,191 @@ export default function TriagemIA() {
       ));
 
       setIsTyping(false);
-    }, 1500 + Math.random() * 1000);
+    }, 1500);
+  };
+
+  const handleFecharChat = () => {
+    setActiveTriagemId(null);
+    setSymptoms('');
   };
 
   return (
-    <div className={`flex h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-gray-50 via-emerald-50/30 to-gray-50'}`}>
-      {/* Overlay para mobile */}
-      {showTriagensSidebar && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setShowTriagensSidebar(false)}
-        />
-      )}
-
-      {/* Sidebar - Histórico de Triagens */}
-      <div className={`${
-        showTriagensSidebar ? 'translate-x-0' : '-translate-x-full'
-      } lg:translate-x-0 fixed lg:relative z-50 lg:z-0 w-80 h-full ${
-        darkMode ? 'bg-gray-800/95' : 'bg-white/95'
-      } backdrop-blur-xl border-r ${
-        darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
-      } flex flex-col shadow-2xl transition-transform duration-300`}>
+    <div className={`flex h-screen p-4 sm:p-6 lg:p-8 gap-4 lg:gap-6 ${darkMode ? 'bg-gray-900' : 'bg-[#EFFDF9]'}`}>
+      {/* Container Principal - Conteúdo da Esquerda */}
+      <div className={`flex-1 rounded-2xl overflow-hidden shadow-xl border lg:h-[calc(100vh-4rem)] ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'}`}>
+        {/* Área Principal - Conteúdo Central */}
+        <div className="flex flex-col h-full">
         
-        {/* Header da Sidebar */}
-        <div className="p-6 border-b border-gray-200/50">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                <MessageSquare className="w-5 h-5 text-white" />
+          {/* Conteúdo - Tela Inicial ou Chat */}
+          {!activeTriagemId ? (
+            // Tela Inicial
+            <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 overflow-y-auto">
+              {/* Header */}
+              <div className="mb-6 sm:mb-8 text-center sm:text-left w-full max-w-2xl">
+                <div className="flex items-center gap-3 mb-2 justify-center sm:justify-start">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' }}>
+                    <Bot className="w-6 h-6 text-white" />
+                  </div>
+                  <h1 className={`text-xl sm:text-2xl lg:text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    Triagem Inteligente
+                  </h1>
+                </div>
+                <p className={`text-xs sm:text-sm lg:text-base text-center sm:text-left ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Converse com nossa IA e obtenha orientação médica personalizada
+              </p>
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto w-full px-4">
+              {/* Ícone Central */}
+              <div className="mb-6 sm:mb-8">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' }}>
+                  <Bot className="w-12 h-12 sm:w-16 sm:h-16 text-white" />
+                </div>
               </div>
-              <div>
-                <h2 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Triagens
+
+              {/* Texto Central */}
+              <div className="text-center mb-6 sm:mb-8">
+                <h2 className={`text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Como está se sentindo hoje?
                 </h2>
-                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {triagens.length} conversa(s)
+                <p className={`text-sm sm:text-base lg:text-lg max-w-xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  Nossa IA médica irá fazer perguntas sobre seus sintomas para entender melhor seu caso e conectá-lo com o especialista adequado.
                 </p>
               </div>
+
+              {/* Botão Iniciar */}
+              <button
+                onClick={handleNovaTriagem}
+                className="mb-8 sm:mb-12 px-5 py-2.5 sm:px-6 sm:py-3 text-white rounded-lg font-semibold transition-all shadow-md flex items-center gap-2 hover:shadow-lg text-sm sm:text-base"
+                style={{ backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' }}
+              >
+                <MessageSquare className="w-5 h-5" />
+                Iniciar Triagem
+              </button>
+
+              {/* Cards de Recursos */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-3xl">
+                <div className={`rounded-xl p-4 sm:p-6 text-center ${darkMode ? 'bg-blue-900/30 border border-blue-800' : 'bg-blue-50'}`}>
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mx-auto mb-2 sm:mb-3 ${darkMode ? 'bg-blue-800' : 'bg-blue-100'}`}>
+                    <MessageSquare className={`w-5 h-5 sm:w-6 sm:h-6 ${darkMode ? 'text-blue-300' : 'text-blue-600'}`} />
+                  </div>
+                  <p className={`text-xs sm:text-sm font-semibold ${darkMode ? 'text-blue-200' : 'text-gray-900'}`}>
+                    Perguntas Personalizadas
+                  </p>
+                </div>
+
+                <div className={`rounded-xl p-4 sm:p-6 text-center ${darkMode ? 'bg-purple-900/30 border border-purple-800' : 'bg-purple-50'}`}>
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mx-auto mb-2 sm:mb-3 ${darkMode ? 'bg-purple-800' : 'bg-purple-100'}`}>
+                    <Lightbulb className={`w-5 h-5 sm:w-6 sm:h-6 ${darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
+                  </div>
+                  <p className={`text-xs sm:text-sm font-semibold ${darkMode ? 'text-purple-200' : 'text-gray-900'}`}>
+                    Orientações Inteligentes
+                  </p>
+                </div>
+
+                <div className={`rounded-xl p-4 sm:p-6 text-center ${darkMode ? 'bg-emerald-900/30 border border-emerald-800' : 'bg-emerald-50'}`}>
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mx-auto mb-2 sm:mb-3 ${darkMode ? 'bg-emerald-800' : 'bg-emerald-100'}`}>
+                    <Calendar className={`w-5 h-5 sm:w-6 sm:h-6 ${darkMode ? 'text-emerald-300' : 'text-emerald-600'}`} />
+                  </div>
+                  <p className={`text-xs sm:text-sm font-semibold ${darkMode ? 'text-emerald-200' : 'text-gray-900'}`}>
+                    Agendamento Rápido
+                  </p>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => setShowTriagensSidebar(false)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition"
-            >
-              <X className="w-5 h-5 text-gray-500" />
-            </button>
           </div>
-          
-          <button 
-            onClick={handleNovaTriagem}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transform hover:scale-[1.02]"
-          >
-            <Plus className="w-5 h-5" />
-            Nova Triagem
-          </button>
-        </div>
-
-        {/* Título do Histórico */}
-        <div className="px-6 py-3 pt-4">
-          <h3 className={`text-xs font-semibold uppercase tracking-wider ${
-            darkMode ? 'text-gray-400' : 'text-gray-500'
-          }`}>
-            Histórico de Triagens
-          </h3>
-        </div>
-
-        {/* Lista de Triagens */}
-        <div className="flex-1 overflow-y-auto px-4 space-y-2 pt-2 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-          {triagens.map((triagem) => (
-            <button
-              key={triagem.id}
-              onClick={() => {
-                setActiveTriagemId(triagem.id);
-                setShowTriagensSidebar(false);
-              }}
-              className={`w-full text-left p-4 rounded-xl border transition-colors ${
-                triagem.id === activeTriagemId
-                  ? 'bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-500'
-                  : darkMode
-                  ? 'bg-gray-700/50 border-gray-600/50 hover:bg-gray-700 hover:border-gray-500'
-                  : 'bg-gray-50/50 border-gray-200/50 hover:bg-white hover:border-gray-300 hover:shadow-md'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                  triagem.id === activeTriagemId 
-                    ? 'bg-emerald-500' 
-                    : darkMode ? 'bg-gray-600' : 'bg-gray-200'
-                }`}>
-                  <MessageSquare className={`w-5 h-5 transition-colors ${
-                    Number(triagem.id) === Number(activeTriagemId)
-                      ? 'text-white' 
-                      : darkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`} />
+        ) : (
+          // Interface de Chat
+          <div className="flex-1 flex flex-col h-full">
+            {/* Header do Chat */}
+            <div className={`border-b px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' }}>
+                  <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`font-semibold text-sm truncate ${
-                    Number(triagem.id) === Number(activeTriagemId)
-                      ? 'text-emerald-900' 
-                      : darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    {triagem.title}
-                  </p>
-                  <p className={`text-xs mt-1 flex items-center gap-1 ${
-                    Number(triagem.id) === Number(activeTriagemId)
-                      ? 'text-emerald-700' 
-                      : darkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}>
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {triagem.date}
+                <div className="min-w-0 flex-1">
+                  <h2 className={`font-bold text-base sm:text-lg truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>Assistente de Triagem</h2>
+                  <p className="text-xs sm:text-sm text-emerald-600 flex items-center gap-1">
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                    <span className="hidden sm:inline">Online • Respondendo em tempo real</span>
+                    <span className="sm:hidden">Online</span>
                   </p>
                 </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Botão para abrir triagens anteriores - MOBILE */}
                 <button
-                  onClick={(e) => handleDeleteTriagem(triagem.id, e)}
-                  className={`p-2 rounded-lg transition-colors flex-shrink-0 ${
-                    darkMode 
-                      ? 'hover:bg-red-500/20 text-gray-400 hover:text-red-400' 
-                      : 'hover:bg-red-50 text-gray-400 hover:text-red-500'
-                  }`}
-                  title="Excluir triagem"
+                  onClick={() => setShowTriagensSidebar(true)}
+                  className={`lg:hidden p-2 rounded-lg transition ${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <MessageSquare className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleFecharChat}
+                  className={`px-3 py-2 sm:px-4 rounded-lg transition font-medium text-sm ${darkMode ? 'text-gray-300 hover:text-white hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}
+                >
+                  Fechar
                 </button>
               </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Área Principal - Chat */}
-      <div className="flex-1 flex flex-col w-full min-w-0">
-        {/* Header com Gradiente */}
-        <div className="flex-shrink-0 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 text-white px-4 sm:px-6 lg:px-8 py-6 shadow-xl">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setShowTriagensSidebar(!showTriagensSidebar)}
-                className="lg:hidden p-2 -ml-2 rounded-xl hover:bg-white/10 transition backdrop-blur-sm"
-              >
-                {showTriagensSidebar ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-              
-              <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg">
-                <Bot className="w-8 h-8 text-white" />
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <h1 className="text-2xl sm:text-3xl font-bold truncate flex items-center gap-2">
-                  Assistente de Triagem Médica
-                  <Sparkles className="w-6 h-6 animate-pulse" />
-                </h1>
-                <p className="text-emerald-50 text-sm sm:text-base mt-1">
-                  Descreva seus sintomas para uma avaliação inicial inteligente
-                </p>
-              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Área de Mensagens */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="max-w-4xl mx-auto space-y-6">
-            {triagens.length === 0 ? (
-              /* Tela quando não há triagens */
-              <div className="flex flex-col items-center justify-center py-12 sm:py-16 lg:py-24">
-                <div className="relative mb-8">
-                  <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full"></div>
-                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-500/30">
-                    <Bot className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
-                  </div>
-                </div>
-                
-                <div className={`text-center space-y-4 px-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
-                    Bem-vindo à Triagem Inteligente
-                  </h2>
-                  <p className={`text-base sm:text-lg max-w-2xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    Nosso assistente de IA está pronto para analisar seus sintomas e orientar sobre os próximos passos.
-                  </p>
-                  
-                  <button 
-                    onClick={handleNovaTriagem}
-                    className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-semibold hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transform hover:scale-105"
-                  >
-                    <Plus className="w-5 h-5" />
-                    Iniciar Nova Triagem
-                  </button>
-                </div>
-              </div>
-            ) : activeTriagem?.messages.length === 1 ? (
-              /* Mensagem de Boas-vindas */
-              <div className="flex flex-col items-center justify-center py-12 sm:py-16">
-                <div className="relative mb-8">
-                  <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full"></div>
-                  <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-500/30 transform hover:scale-105 transition">
-                    <Bot className="w-12 h-12 sm:w-16 sm:h-16 text-white" />
-                  </div>
-                </div>
-                
-                <div className={`text-center space-y-4 px-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  <h2 className="text-2xl sm:text-3xl font-bold">
-                    Olá! 👋 Sou seu assistente de triagem médica.
-                  </h2>
-                  <p className={`text-base sm:text-lg max-w-2xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    Por favor, descreva seus sintomas em detalhes e vou ajudá-lo com uma avaliação inicial inteligente e personalizada.
-                  </p>
-                  
-                  <div className={`mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto`}>
-                    <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg border ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                      <div className="text-3xl mb-2">🩺</div>
-                      <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        Avaliação rápida
-                      </p>
-                    </div>
-                    <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg border ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                      <div className="text-3xl mb-2">⚡</div>
-                      <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        24/7 disponível
-                      </p>
-                    </div>
-                    <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg border ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                      <div className="text-3xl mb-2">🤖</div>
-                      <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        IA avançada
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* Chat de Mensagens */
-              <>
+            {/* Área de Mensagens */}
+            <div className={`flex-1 overflow-y-auto px-3 sm:px-6 py-4 sm:py-6 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+              <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
                 {activeTriagem?.messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex gap-3 sm:gap-4 ${message.type === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-4 duration-500`}
+                    className={`flex gap-2 sm:gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {message.type === 'bot' && (
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/30">
-                        <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' }}>
+                        <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       </div>
                     )}
                     
                     <div
-                      className={`max-w-[85%] sm:max-w-2xl rounded-2xl px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base shadow-lg ${
+                      className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base ${
                         message.type === 'bot'
-                          ? darkMode
-                            ? 'bg-gradient-to-br from-gray-800 to-gray-750 text-gray-100 border border-gray-700'
-                            : 'bg-white text-gray-900 border border-gray-100'
-                          : 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/30'
+                          ? darkMode ? 'bg-gray-800 text-gray-100 shadow-sm border border-gray-700' : 'bg-white text-gray-900 shadow-sm border border-gray-100'
+                          : 'text-white shadow-sm'
                       }`}
+                      style={message.type === 'user' ? { backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' } : {}}
                     >
-                      <p className="leading-relaxed">{message.text}</p>
+                      <p className="leading-relaxed whitespace-pre-line">{message.text}</p>
+                      <p className={`text-xs mt-1 ${message.type === 'bot' ? (darkMode ? 'text-gray-500' : 'text-gray-400') : 'text-white/70'}`}>
+                        {message.time}
+                      </p>
                     </div>
-                    
+
                     {message.type === 'user' && (
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                        <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}>
+                        <User className={`w-4 h-4 sm:w-5 sm:h-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
                       </div>
                     )}
                   </div>
                 ))}
 
-                {/* Indicador de "digitando" */}
+                {/* Indicador de digitação */}
                 {isTyping && (
-                  <div className="flex gap-4 justify-start animate-in fade-in slide-in-from-bottom-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/30">
-                      <Bot className="w-6 h-6 text-white" />
+                  <div className="flex gap-2 sm:gap-3 justify-start">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' }}>
+                      <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
-                    <div className={`rounded-2xl px-5 py-4 shadow-lg ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'}`}>
-                      <div className="flex gap-1.5">
-                        <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    <div className={`rounded-2xl px-4 py-3 shadow-sm border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                       </div>
                     </div>
                   </div>
                 )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Input de Mensagem - Design Moderno */}
-        <div className={`flex-shrink-0 ${darkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-xl border-t ${darkMode ? 'border-gray-700/50' : 'border-gray-200/50'} px-4 sm:px-6 lg:px-8 py-4 sm:py-6 shadow-2xl`}>
-          <div className="max-w-4xl mx-auto">
-            {triagens.length === 0 ? (
-              <div className="text-center py-4">
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Clique em "Iniciar Nova Triagem" para começar
-                </p>
               </div>
-            ) : (
-            <div className="flex gap-3 items-center">
-              <div className="flex-1 relative">
+            </div>
+
+            {/* Input de Mensagem */}
+            <div className={`border-t px-3 sm:px-6 py-3 sm:py-4 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+              <div className="max-w-4xl mx-auto flex gap-2 sm:gap-3 items-end">
                 <textarea
                   value={symptoms}
                   onChange={(e) => setSymptoms(e.target.value)}
@@ -432,40 +282,140 @@ export default function TriagemIA() {
                       handleSendMessage();
                     }
                   }}
-                  placeholder="Descreva seus sintomas detalhadamente... (ex: febre há 2 dias, dor de cabeça intensa)"
-                  rows={2}
-                  className={`w-full px-4 sm:px-5 lg:px-4 py-2.5 sm:py-3 lg:py-2.5 rounded-2xl lg:rounded-xl border-2 text-sm sm:text-base lg:text-sm resize-none ${
-                    darkMode
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500'
-                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-emerald-500'
-                  } focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition shadow-inner`}
+                  placeholder="Digite sua mensagem..."
+                  rows={1}
+                  className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 placeholder-gray-400 focus:outline-none focus:ring-2 transition resize-none text-sm sm:text-base ${
+                    darkMode 
+                      ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-400 focus:ring-blue-900' 
+                      : 'bg-white border-gray-200 text-gray-900 focus:border-blue-400 focus:ring-blue-100'
+                  }`}
                 />
+                
+                <button 
+                  onClick={handleSendMessage}
+                  disabled={!symptoms.trim()}
+                  className={`p-2.5 sm:p-3 rounded-xl transition-all flex items-center justify-center ${
+                    symptoms.trim()
+                      ? 'text-white shadow-md hover:shadow-lg'
+                      : (darkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-200 text-gray-400') + ' cursor-not-allowed'
+                  }`}
+                  style={symptoms.trim() ? { backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' } : {}}
+                >
+                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
               </div>
-              
-              <button 
-                onClick={handleSendMessage}
-                disabled={!symptoms.trim()}
-                className={`px-3 sm:px-4 lg:px-4 py-3 sm:py-3.5 lg:py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-1.5 text-xs sm:text-sm lg:text-sm flex-shrink-0 shadow-md ${
-                  symptoms.trim()
-                    ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/30 transform hover:scale-105'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline lg:inline">Enviar</span>
-              </button>
             </div>
-            )}
-            
-            {/* Mensagem Informativa */}
-            {triagens.length > 0 && (
-            <p className={`text-xs text-center mt-3 ${darkMode ? 'text-gray-500' : 'text-gray-500'} flex items-center justify-center gap-1.5`}>
-              💡 A triagem por IA não substitui uma consulta médica profissional
-            </p>
-            )}
           </div>
+        )}
         </div>
       </div>
+
+      {/* Sidebar Direita - Triagens Anteriores */}
+      <div className={`
+        ${showTriagensSidebar ? 'translate-x-0' : 'translate-x-full'}
+        lg:translate-x-0
+        fixed lg:relative
+        right-0 lg:right-auto
+        top-0 lg:top-auto
+        bottom-0 lg:bottom-auto
+        h-full lg:h-[calc(100vh-4rem)]
+        w-[85%] sm:w-96
+        lg:w-80 xl:w-96
+        rounded-l-2xl lg:rounded-2xl
+        shadow-2xl border-l lg:border
+        flex flex-col
+        overflow-hidden
+        transition-transform duration-300
+        z-50 lg:z-0
+        ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}
+      `}>
+        
+          {/* Header da Sidebar */}
+        <div className={`p-4 sm:p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="flex items-center justify-between">
+            <h2 className={`font-bold text-lg sm:text-xl ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Triagens Anteriores
+            </h2>
+            {/* Botão fechar - apenas mobile */}
+            <button
+              onClick={() => setShowTriagensSidebar(false)}
+              className={`lg:hidden p-2 rounded-lg transition ${darkMode ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Lista de Triagens */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 sm:space-y-3">
+          {triagens.length === 0 ? (
+            // Mensagem quando não há triagens
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                <MessageSquare className={`w-8 h-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+              </div>
+              <p className={`text-sm font-medium text-center mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Nenhuma triagem por aqui
+              </p>
+              <p className={`text-xs text-center ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                Clique em "Iniciar Triagem" para começar
+              </p>
+            </div>
+          ) : (
+            triagens.map((triagem) => (
+              <button
+                key={triagem.id}
+                onClick={() => {
+                  setActiveTriagemId(triagem.id);
+                  setShowTriagensSidebar(false);
+                }}
+                className={`w-full text-left p-3 sm:p-4 rounded-xl border transition-all text-sm ${
+                  triagem.id === activeTriagemId
+                    ? darkMode ? 'border-blue-400 bg-blue-900/30 shadow-md' : 'border-blue-300 bg-blue-50 shadow-md'
+                    : darkMode ? 'border-gray-700 bg-gray-900/50 hover:border-gray-600 hover:shadow-md' : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <p className={`font-semibold text-xs sm:text-sm line-clamp-1 flex-1 ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                    {triagem.title}
+                  </p>
+                  <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-bold rounded flex-shrink-0">
+                    {triagem.severity}
+                  </span>
+                </div>
+                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {triagem.date}
+                </p>
+                <button
+                  onClick={(e) => handleDeleteTriagem(triagem.id, e)}
+                  className={`mt-2 text-xs transition ${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-700'}`}
+                >
+                  Excluir
+                </button>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Botão flutuante para abrir triagens - Mobile - Apenas na tela inicial */}
+      {!activeTriagemId && (
+        <button
+          onClick={() => setShowTriagensSidebar(true)}
+          className="lg:hidden fixed bottom-6 right-6 w-14 h-14 text-white rounded-full shadow-lg flex items-center justify-center z-40 transition hover:shadow-xl"
+          style={{ backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' }}
+        >
+          <MessageSquare className="w-6 h-6" />
+        </button>
+      )}
+
+      {/* Overlay mobile */}
+      {showTriagensSidebar && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          onClick={() => setShowTriagensSidebar(false)}
+        />
+      )}
     </div>
   );
 }
