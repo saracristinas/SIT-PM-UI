@@ -216,21 +216,21 @@ export default function TriagemIA() {
                     : darkMode ? 'bg-gray-600' : 'bg-gray-200'
                 }`}>
                   <MessageSquare className={`w-5 h-5 transition-colors ${
-                    triagem.id === activeTriagemId 
+                    Number(triagem.id) === Number(activeTriagemId)
                       ? 'text-white' 
                       : darkMode ? 'text-gray-400' : 'text-gray-500'
                   }`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={`font-semibold text-sm truncate ${
-                    triagem.id === activeTriagemId 
+                    Number(triagem.id) === Number(activeTriagemId)
                       ? 'text-emerald-900' 
                       : darkMode ? 'text-white' : 'text-gray-900'
                   }`}>
                     {triagem.title}
                   </p>
                   <p className={`text-xs mt-1 flex items-center gap-1 ${
-                    triagem.id === activeTriagemId 
+                    Number(triagem.id) === Number(activeTriagemId)
                       ? 'text-emerald-700' 
                       : darkMode ? 'text-gray-400' : 'text-gray-500'
                   }`}>
