@@ -59,6 +59,16 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
         showNotification('error', 'Por favor, selecione a DATA E HORA da consulta no campo acima.');
         return;
       }
+      
+      // Validar se a data/hora não está no passado
+      const selectedDateTime = new Date(formData.datetime);
+      const now = new Date();
+      
+      if (selectedDateTime <= now) {
+        showNotification('error', 'A data e hora da consulta devem ser no FUTURO. Por favor, selecione um horário posterior ao atual.');
+        return;
+      }
+      
       if (!formData.type) {
         showNotification('error', 'Por favor, escolha o TIPO DE CONSULTA: Presencial ou Online.');
         return;
@@ -96,14 +106,13 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
     setTimeout(() => {
       setIsLoading(false);
       
-      // Criar objeto de consulta
+      // Criar objeto de consulta com dataHora no formato ISO para compatibilidade
       const novaConsulta = {
         id: Date.now(),
         paciente: 'Paciente',
         medico: formData.medico || 'Automático',
         especialidade: formData.especialidade,
-        data: formData.datetime.split('T')[0],
-        hora: formData.datetime.split('T')[1] || '10:00',
+        dataHora: formData.datetime, // Formato ISO completo para o Consultas.jsx
         tipo: formData.type,
         status: 'agendada',
         motivo: formData.motivo
@@ -537,7 +546,10 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                   <div>
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Data e Hora</p>
                     <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {new Date(formData.datetime).toLocaleString('pt-BR')}
+                      {formData.datetime ? new Date(formData.datetime).toLocaleString('pt-BR', {
+                        dateStyle: 'short',
+                        timeStyle: 'short'
+                      }) : 'Não selecionada'}
                     </p>
                   </div>
                 </div>
