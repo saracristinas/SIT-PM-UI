@@ -51,14 +51,22 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
 
   const handleNext = () => {
     if (currentStep === 1) {
-      if (!formData.datetime || !formData.type) {
-        showNotification('error', 'Por favor, selecione a data/hora e o tipo de consulta.');
+      if (!formData.datetime && !formData.type) {
+        showNotification('error', 'Por favor, selecione a DATA/HORA e o TIPO DE CONSULTA (Presencial ou Online).');
+        return;
+      }
+      if (!formData.datetime) {
+        showNotification('error', 'Por favor, selecione a DATA E HORA da consulta no campo acima.');
+        return;
+      }
+      if (!formData.type) {
+        showNotification('error', 'Por favor, escolha o TIPO DE CONSULTA: Presencial ou Online.');
         return;
       }
     }
     if (currentStep === 2) {
       if (!formData.especialidade) {
-        showNotification('error', 'Por favor, selecione uma especialidade.');
+        showNotification('error', 'Por favor, selecione uma ESPECIALIDADE MÉDICA (ex: Clínico Geral, Cardiologia, etc).');
         return;
       }
     }
@@ -74,8 +82,13 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
   };
 
   const handleSubmit = () => {
-    if (!formData.motivo || !formData.medico) {
-      showNotification('error', 'Por favor, preencha todos os campos obrigatórios.');
+    if (!formData.motivo) {
+      showNotification('error', 'Por favor, descreva o MOTIVO DA CONSULTA no campo de texto abaixo. Exemplo: "Dor de cabeça persistente há 3 dias".');
+      return;
+    }
+
+    if (formData.motivo.length < 10) {
+      showNotification('error', 'Por favor, descreva o motivo da consulta com mais detalhes (mínimo 10 caracteres).');
       return;
     }
 
@@ -87,7 +100,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
       const novaConsulta = {
         id: Date.now(),
         paciente: 'Paciente',
-        medico: formData.medico,
+        medico: formData.medico || 'Automático',
         especialidade: formData.especialidade,
         data: formData.datetime.split('T')[0],
         hora: formData.datetime.split('T')[1] || '10:00',
@@ -96,12 +109,10 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
         motivo: formData.motivo
       };
 
-      // Chamar callback do App.jsx
+      // Chamar callback do App.jsx (ele mostrará a notificação)
       if (onAgendarConsulta) {
         onAgendarConsulta(novaConsulta);
       }
-
-      showNotification('success', 'Consulta agendada com sucesso! ✅');
       
       // Redirecionar para Consultas após 1 segundo
       setTimeout(() => {
@@ -279,13 +290,16 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                     value={formData.datetime}
                     onChange={(e) => setFormData({ ...formData, datetime: e.target.value })}
                     min={new Date().toISOString().slice(0, 16)}
-                    className={`w-full px-4 py-4 rounded-xl border-2 text-base ${
+                    className={`w-full px-4 py-4 rounded-xl border-2 text-sm sm:text-base ${
                       darkMode
                         ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500'
-                        : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-emerald-500'
+                        : 'bg-white border-gray-200 text-gray-900 focus:border-emerald-500'
                     } focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition`}
                     aria-label="Selecione data e horário"
                   />
+                  <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    💡 Clique no campo acima para abrir o calendário e escolher a data e hora
+                  </p>
                 </div>
               </div>
             </div>
@@ -434,15 +448,18 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                 <textarea
                   value={formData.motivo}
                   onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}
-                  placeholder="Descreva detalhadamente o que está sentindo, quando começou e outros detalhes importantes..."
+                  placeholder="Exemplo: 'Estou com dor de cabeça intensa há 3 dias, principalmente pela manhã. Também sinto náuseas e sensibilidade à luz...'"
                   rows={5}
-                  className={`w-full px-4 py-4 rounded-xl border-2 text-base ${
+                  className={`w-full px-4 py-4 rounded-xl border-2 text-sm sm:text-base ${
                     darkMode
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500'
-                      : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-emerald-500'
+                      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500 focus:border-emerald-500'
                   } focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition resize-none`}
                   aria-label="Descreva o motivo da consulta"
                 />
+                <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  💡 Seja específico: descreva os sintomas, quando começaram, intensidade e frequência
+                </p>
               </div>
 
               {/* Aviso */}
