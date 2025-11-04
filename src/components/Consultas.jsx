@@ -20,18 +20,18 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
   ]
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6 mb-8`}>
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center">
-            <Calendar className="w-8 h-8 text-white" />
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 sm:p-6 mb-6 sm:mb-8`}>
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
-          <div>
-            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+          <div className="flex-1 min-w-0">
+            <h1 className={`text-lg sm:text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
               Minhas Consultas
             </h1>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
+            <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
               Gerencie seus agendamentos
             </p>
           </div>
@@ -39,7 +39,7 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {stats.map((stat, index) => {
           const Icon = stat.icon
           const colorClasses = {
@@ -51,19 +51,19 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
           return (
             <div
               key={index}
-              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6`}
+              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 sm:p-6`}
             >
               <div className="flex items-center justify-between">
-                <div>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>
                     {stat.label}
                   </p>
-                  <p className={`text-3xl font-bold ${stat.color === 'blue' ? 'text-blue-600' : stat.color === 'emerald' ? 'text-emerald-600' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  <p className={`text-2xl sm:text-3xl font-bold ${stat.color === 'blue' ? 'text-blue-600' : stat.color === 'emerald' ? 'text-emerald-600' : darkMode ? 'text-white' : 'text-gray-900'}`}>
                     {stat.value}
                   </p>
                 </div>
-                <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${colorClasses[stat.color]}`}>
-                  <Icon className="w-8 h-8" />
+                <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center flex-shrink-0 ${colorClasses[stat.color]}`}>
+                  <Icon className="w-6 h-6 sm:w-8 sm:h-8" />
                 </div>
               </div>
             </div>
@@ -72,10 +72,10 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
       </div>
 
       {/* Lista de Consultas */}
-      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6`}>
-        <div className="flex items-center gap-3 mb-6">
-          <Clock className={`w-5 h-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-          <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 sm:p-6`}>
+        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <Clock className={`w-4 h-4 sm:w-5 sm:h-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+          <h3 className={`font-bold text-base sm:text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             Consultas Agendadas
           </h3>
         </div>
@@ -105,40 +105,40 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
             {consultasAtivas.map((consulta) => (
               <div
                 key={consulta.id}
-                className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-6 border ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}
+                className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-4 sm:p-6 border ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4 flex-1">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${darkMode ? 'bg-emerald-900' : 'bg-emerald-100'}`}>
-                      <Calendar className="w-6 h-6 text-emerald-600" />
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${darkMode ? 'bg-emerald-900' : 'bg-emerald-100'}`}>
+                      <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
                     </div>
-                    <div className="flex-1">
-                      <h4 className={`font-bold text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <div className="flex-1 min-w-0">
+                      <h4 className={`font-bold text-base sm:text-lg mb-1 sm:mb-2 ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
                         {new Date(consulta.dataHora).toLocaleDateString('pt-BR', { 
                           day: '2-digit', 
                           month: 'long', 
                           year: 'numeric' 
                         })}
                       </h4>
-                      <p className={`text-emerald-600 font-medium mb-3`}>
+                      <p className={`text-emerald-600 font-medium mb-2 sm:mb-3 text-sm sm:text-base`}>
                         {new Date(consulta.dataHora).toLocaleTimeString('pt-BR', { 
                           hour: '2-digit', 
                           minute: '2-digit' 
                         })}
                       </p>
-                      <div className={`space-y-1 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        <p><span className="font-medium">Médico:</span> {consulta.medico || 'A definir'}</p>
-                        <p><span className="font-medium">Motivo:</span> {consulta.motivo || 'Não especificado'}</p>
+                      <div className={`space-y-1 text-xs sm:text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        <p className="truncate"><span className="font-medium">Médico:</span> {consulta.medico || 'A definir'}</p>
+                        <p className="line-clamp-2 sm:line-clamp-none"><span className="font-medium">Motivo:</span> {consulta.motivo || 'Não especificado'}</p>
                       </div>
-                      <div className="flex gap-2 mt-3">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      <div className="flex flex-wrap gap-2 mt-2 sm:mt-3">
+                        <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
                           consulta.tipo === 'presencial' 
                             ? 'bg-blue-100 text-blue-700' 
                             : 'bg-purple-100 text-purple-700'
                         }`}>
                           {consulta.tipo === 'presencial' ? '🏥 Presencial' : '💻 Online'}
                         </span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
                           consulta.status === 'agendada' 
                             ? 'bg-blue-100 text-blue-700' 
                             : consulta.status === 'concluida'
@@ -151,13 +151,13 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex sm:flex-col gap-2 justify-end sm:justify-start">
                     <button
                       onClick={() => setSelectedConsulta(consulta)}
-                      className={`p-2 rounded-lg ${darkMode ? 'bg-emerald-900 hover:bg-emerald-800' : 'bg-emerald-100 hover:bg-emerald-200'} transition`}
+                      className={`p-2 rounded-lg ${darkMode ? 'bg-emerald-900 hover:bg-emerald-800' : 'bg-emerald-100 hover:bg-emerald-200'} transition flex-shrink-0`}
                       title="Ver detalhes"
                     >
-                      <Eye className="w-5 h-5 text-emerald-600" />
+                      <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
                     </button>
                     <button
                       onClick={() => {
@@ -169,17 +169,17 @@ export default function Consultas({ darkMode, onNavigate, consultas = [], onEdit
                           motivo: consulta.motivo
                         })
                       }}
-                      className={`p-2 rounded-lg ${darkMode ? 'bg-blue-900 hover:bg-blue-800' : 'bg-blue-100 hover:bg-blue-200'} transition`}
+                      className={`p-2 rounded-lg ${darkMode ? 'bg-blue-900 hover:bg-blue-800' : 'bg-blue-100 hover:bg-blue-200'} transition flex-shrink-0`}
                       title="Editar consulta"
                     >
-                      <Edit2 className="w-5 h-5 text-blue-600" />
+                      <Edit2 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                     </button>
                     <button
                       onClick={() => setDeletingConsulta(consulta)}
-                      className={`p-2 rounded-lg ${darkMode ? 'bg-red-900 hover:bg-red-800' : 'bg-red-100 hover:bg-red-200'} transition`}
+                      className={`p-2 rounded-lg ${darkMode ? 'bg-red-900 hover:bg-red-800' : 'bg-red-100 hover:bg-red-200'} transition flex-shrink-0`}
                       title="Excluir consulta"
                     >
-                      <Trash2 className="w-5 h-5 text-red-600" />
+                      <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                     </button>
                   </div>
                 </div>

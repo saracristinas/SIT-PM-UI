@@ -89,7 +89,7 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-[#EFFDF9]'}`}>
       {/* Top Header Mobile/Tablet */}
       <div className={`fixed top-0 left-0 right-0 h-16 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-md z-40 lg:hidden`}>
         <div className="flex items-center justify-between h-full px-4">
@@ -141,14 +141,14 @@ export default function App() {
 
       {/* Toast de Sucesso Global */}
       {showSuccessToast && (
-        <div className="fixed top-4 right-4 z-50 animate-slide-in">
-          <div className="bg-emerald-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px]">
+        <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-50 animate-slide-in">
+          <div className="bg-emerald-500 text-white px-4 py-3 sm:px-6 sm:py-4 rounded-lg shadow-lg flex items-center gap-3 max-w-sm sm:min-w-[300px]">
             <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
               <Check className="w-5 h-5" />
             </div>
-            <div className="flex-1">
-              <p className="font-semibold">{toastMessage.title}</p>
-              <p className="text-sm text-emerald-100">{toastMessage.subtitle}</p>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm sm:text-base truncate">{toastMessage.title}</p>
+              <p className="text-xs sm:text-sm text-emerald-100 truncate">{toastMessage.subtitle}</p>
             </div>
           </div>
         </div>

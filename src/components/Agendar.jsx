@@ -48,34 +48,35 @@ export default function Agendar({ darkMode, onBack, onNavigate, onAgendarConsult
   }
 
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6 mb-8`}>
-        <div className="flex items-center gap-4">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition`}
-            >
-              <ArrowLeft className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
-            </button>
-          )}
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center">
-            <Calendar className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Agendar Nova Consulta
-            </h1>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
-              Preencha os dados para marcar seu atendimento
-            </p>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 sm:p-6 mb-6 sm:mb-8`}>
+          <div className="flex items-center gap-3 sm:gap-4">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition`}
+              >
+                <ArrowLeft className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+              </button>
+            )}
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className={`text-lg sm:text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
+                Agendar Nova Consulta
+              </h1>
+              <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1 hidden sm:block`}>
+                Preencha os dados para marcar seu atendimento
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Formulário */}
-      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-8 max-w-4xl`}>
+        {/* Formulário */}
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 sm:p-6 lg:p-8`}>
         <div className={`mb-6 pb-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <h2 className={`text-lg font-semibold ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
             Dados da Consulta
@@ -105,10 +106,10 @@ export default function Agendar({ darkMode, onBack, onNavigate, onAgendarConsult
             <label className={`block text-sm font-medium mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               Tipo de Consulta <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <button
                 onClick={() => setFormData({ ...formData, type: 'presencial' })}
-                className={`p-6 rounded-lg border-2 transition ${
+                className={`p-4 sm:p-6 rounded-lg border-2 transition ${
                   formData.type === 'presencial'
                     ? 'border-emerald-500 bg-emerald-50'
                     : darkMode
@@ -116,18 +117,18 @@ export default function Agendar({ darkMode, onBack, onNavigate, onAgendarConsult
                     : 'border-gray-300 bg-white hover:border-gray-400'
                 }`}
               >
-                <Building2 className={`w-8 h-8 mx-auto mb-3 ${formData.type === 'presencial' ? 'text-emerald-600' : darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                <p className={`font-semibold mb-1 ${formData.type === 'presencial' ? 'text-emerald-900' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <Building2 className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 sm:mb-3 ${formData.type === 'presencial' ? 'text-emerald-600' : darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                <p className={`font-semibold text-sm sm:text-base mb-1 ${formData.type === 'presencial' ? 'text-emerald-900' : darkMode ? 'text-white' : 'text-gray-900'}`}>
                   Presencial
                 </p>
-                <p className={`text-sm ${formData.type === 'presencial' ? 'text-emerald-700' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className={`text-xs sm:text-sm ${formData.type === 'presencial' ? 'text-emerald-700' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Atendimento na clínica
                 </p>
               </button>
 
               <button
                 onClick={() => setFormData({ ...formData, type: 'online' })}
-                className={`p-6 rounded-lg border-2 transition ${
+                className={`p-4 sm:p-6 rounded-lg border-2 transition ${
                   formData.type === 'online'
                     ? 'border-emerald-500 bg-emerald-50'
                     : darkMode
@@ -135,11 +136,11 @@ export default function Agendar({ darkMode, onBack, onNavigate, onAgendarConsult
                     : 'border-gray-300 bg-white hover:border-gray-400'
                 }`}
               >
-                <Video className={`w-8 h-8 mx-auto mb-3 ${formData.type === 'online' ? 'text-emerald-600' : darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                <p className={`font-semibold mb-1 ${formData.type === 'online' ? 'text-emerald-900' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                <Video className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 sm:mb-3 ${formData.type === 'online' ? 'text-emerald-600' : darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                <p className={`font-semibold text-sm sm:text-base mb-1 ${formData.type === 'online' ? 'text-emerald-900' : darkMode ? 'text-white' : 'text-gray-900'}`}>
                   Online
                 </p>
-                <p className={`text-sm ${formData.type === 'online' ? 'text-emerald-700' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className={`text-xs sm:text-sm ${formData.type === 'online' ? 'text-emerald-700' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                   Teleconsulta
                 </p>
               </button>
@@ -189,11 +190,11 @@ export default function Agendar({ darkMode, onBack, onNavigate, onAgendarConsult
           </div>
 
           {/* Botões */}
-          <div className="flex gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
             <button
               onClick={handleCancel}
               disabled={isLoading}
-              className={`flex-1 px-6 py-3 rounded-lg border ${
+              className={`flex-1 px-4 sm:px-6 py-3 rounded-lg border text-sm sm:text-base ${
                 darkMode
                   ? 'border-gray-600 text-white hover:bg-gray-700'
                   : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -204,7 +205,7 @@ export default function Agendar({ darkMode, onBack, onNavigate, onAgendarConsult
             <button 
               onClick={handleSubmit}
               disabled={isLoading}
-              className={`flex-1 px-6 py-3 rounded-lg font-medium transition ${
+              className={`flex-1 px-4 sm:px-6 py-3 rounded-lg font-medium transition text-sm sm:text-base ${
                 isLoading
                   ? 'bg-emerald-300 cursor-not-allowed'
                   : 'bg-emerald-500 hover:bg-emerald-600'
@@ -214,6 +215,7 @@ export default function Agendar({ darkMode, onBack, onNavigate, onAgendarConsult
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )
