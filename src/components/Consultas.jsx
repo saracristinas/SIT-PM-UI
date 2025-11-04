@@ -150,21 +150,20 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
             return (
               <div
                 key={index}
-                className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-5`}
+                className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-3 sm:p-4`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className={`text-xs sm:text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p className={`text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {stat.label}
                     </p>
-                    <p className={`text-3xl sm:text-4xl font-bold ${stat.textColor}`}>
+                    <p className={`text-2xl sm:text-3xl font-bold ${stat.textColor}`}>
                       {stat.value}
                     </p>
-                    <div className={`mt-1.5 sm:mt-2 h-1 w-12 sm:w-14 rounded-full ${stat.textColor}`}></div>
                   </div>
                   
-                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl ${stat.bgLight} flex items-center justify-center flex-shrink-0`}>
-                    <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${stat.textColor}`} />
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${stat.bgLight} flex items-center justify-center flex-shrink-0`}>
+                    <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.textColor}`} />
                   </div>
                 </div>
               </div>
