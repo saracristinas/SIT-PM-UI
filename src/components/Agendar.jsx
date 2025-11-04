@@ -134,29 +134,19 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-300 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
           </div>
           
-          <div className="relative flex items-center gap-4">
-            <button
-              onClick={() => window.history.back()}
-              className="p-3 bg-white/20 backdrop-blur-md rounded-xl hover:bg-white/30 transition"
-              aria-label="Voltar"
-            >
-              <ArrowLeft className="w-6 h-6 text-white" />
-            </button>
-            
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
-                  <Calendar className="w-7 h-7 text-white" />
-                </div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-white flex items-center gap-2">
-                  Agendar Consulta
-                  <Sparkles className="w-6 h-6 animate-pulse" />
-                </h1>
+          <div className="relative">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                <Calendar className="w-7 h-7 text-white" />
               </div>
-              <p className="text-emerald-50 text-sm sm:text-base ml-16">
-                Preencha os dados para marcar seu atendimento de forma rápida e segura
-              </p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white flex items-center gap-2">
+                Agendar Consulta
+                <Sparkles className="w-6 h-6 animate-pulse" />
+              </h1>
             </div>
+            <p className="text-emerald-50 text-sm sm:text-base ml-0 sm:ml-16">
+              Preencha os dados para marcar seu atendimento de forma rápida e segura
+            </p>
           </div>
         </div>
 

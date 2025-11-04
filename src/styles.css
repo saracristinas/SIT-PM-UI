@@ -6,8 +6,31 @@
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
 
+/* Garantir que o body permita scroll */
+body {
+  overflow-y: auto !important;
+  position: relative;
+}
+
+#root {
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
 /* helper for the earlier placeholder styles if needed */
 .app { min-height: 100%; }
+
+/* Fix para datetime-local picker em mobile */
+input[type="datetime-local"] {
+  position: relative;
+  z-index: 1;
+}
+
+/* Garantir que calendário/relógio apareçam corretamente */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  z-index: 2;
+}
 
 /* Toast animation */
 @keyframes slide-in {
