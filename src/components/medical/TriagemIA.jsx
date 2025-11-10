@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, MessageSquare, Plus, Menu, X, Sparkles, AlertCircle, Trash2, Lightbulb, Calendar } from 'lucide-react';
-import { sendMessageToGemini, startTriagem, analyzeSymptomSeverity, detectarIntencaoAgendamento } from '../services/gemini';
-import { enviarEmailConsultaAgendada } from '../services/emailService';
-import CalendarioAgendamento from './CalendarioAgendamento';
+import { sendMessageToGemini, startTriagem, analyzeSymptomSeverity, detectarIntencaoAgendamento } from '../../services/gemini';
+import { enviarEmailConsultaAgendada } from '../../services/emailService';
+import CalendarioAgendamento from '../scheduling/CalendarioAgendamento';
 
 export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
   const [symptoms, setSymptoms] = useState('');

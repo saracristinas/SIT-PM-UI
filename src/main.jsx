@@ -2,7 +2,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import App from './App'
-import './styles.css'
+import './styles/styles.css'
 
 const container = document.getElementById('root')
 const root = createRoot(container)

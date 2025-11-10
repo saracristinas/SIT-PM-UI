@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Check, Menu, X, Moon, HeartPulse } from 'lucide-react'
-import Sidebar from './components/Sidebar'
-import SITPMDashboard from './components/SITPMDashboard'
-import TriagemIA from './components/TriagemIA'
-import Agendar from './components/Agendar'
-import Consultas from './components/Consultas'
-import Prontuario from './components/Prontuario'
-import Auth from './components/Auth'
+import Sidebar from './components/common/Sidebar'
+import SITPMDashboard from './components/dashboard/SITPMDashboard'
+import TriagemIA from './components/medical/TriagemIA'
+import Agendar from './components/scheduling/Agendar'
+import Consultas from './components/scheduling/Consultas'
+import Prontuario from './components/medical/Prontuario'
+import Auth from './components/auth/Auth'
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false)

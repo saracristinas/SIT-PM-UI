@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, ArrowLeft, Building2, Video, Clock, Stethoscope, CheckCircle2, AlertCircle, Sparkles, ChevronRight, X, ChevronDown, Check, Mail } from 'lucide-react';
-import { enviarEmailConsultaAgendada } from '../services/emailService';
+import { enviarEmailConsultaAgendada } from '../../services/emailService';
 
 export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsulta }) {
   const [currentStep, setCurrentStep] = useState(1);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Login from './Login';
-import Cadastro from './Cadastro';
+import Cadastro from '../medical/Cadastro';
 
 export default function Auth({ darkMode = false, onAuthSuccess }) {
   const [showLogin, setShowLogin] = useState(true);
