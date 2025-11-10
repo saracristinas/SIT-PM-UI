@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Calendar, ArrowLeft, Building2, Video, Clock, Stethoscope, CheckCircle2, AlertCircle, Sparkles, ChevronRight, X, ChevronDown, Check } from 'lucide-react';
+import { Calendar, ArrowLeft, Building2, Video, Clock, Stethoscope, CheckCircle2, AlertCircle, Sparkles, ChevronRight, X, ChevronDown, Check, Mail } from 'lucide-react';
+import { enviarEmailConsultaAgendada } from '../services/emailService';
 
 export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsulta }) {
   const [currentStep, setCurrentStep] = useState(1);
@@ -91,7 +92,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.motivo) {
       showNotification('error', 'Por favor, descreva o MOTIVO DA CONSULTA no campo de texto abaixo. Exemplo: "Dor de cabeça persistente há 3 dias".');
       return;
@@ -103,33 +104,66 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    
+    try {
+      // Obter dados do usuário logado
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
       
-      // Criar objeto de consulta com dataHora no formato ISO para compatibilidade
+      // Extrair data e hora do datetime
+      const dateTime = new Date(formData.datetime);
+      const data = dateTime.toISOString().split('T')[0];
+      const hora = dateTime.toTimeString().split(' ')[0].substring(0, 5);
+      
+      // Criar objeto de consulta
       const novaConsulta = {
         id: Date.now(),
-        paciente: 'Paciente',
+        paciente: userData.name || 'Paciente',
         medico: formData.medico || 'Automático',
         especialidade: formData.especialidade,
-        dataHora: formData.datetime, // Formato ISO completo para o Consultas.jsx
+        dataHora: formData.datetime,
+        data: data,
+        hora: hora,
         tipo: formData.type,
         status: 'agendada',
         motivo: formData.motivo
       };
 
-      // Chamar callback do App.jsx (ele mostrará a notificação)
+      // Simula processamento
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Enviar email de confirmação
+      if (userData.email) {
+        console.log('📧 Enviando email de confirmação...');
+        const emailResult = await enviarEmailConsultaAgendada(userData, novaConsulta);
+        
+        if (emailResult.success) {
+          console.log('✅ Email enviado com sucesso!');
+        } else {
+          console.warn('⚠️ Falha ao enviar email, mas consulta foi agendada');
+        }
+      }
+
+      setIsLoading(false);
+      
+      // Chamar callback do App.jsx (mostrará a notificação)
       if (onAgendarConsulta) {
         onAgendarConsulta(novaConsulta);
       }
       
-      // Redirecionar para Consultas após 1 segundo
+      // Mostrar notificação de email enviado
+      showNotification('success', `📧 Email de confirmação enviado para ${userData.email || 'seu email'}`);
+      
+      // Redirecionar para Consultas após 2 segundos
       setTimeout(() => {
         if (onNavigate) {
           onNavigate('consultas');
         }
-      }, 1000);
-    }, 2000);
+      }, 2000);
+    } catch (error) {
+      setIsLoading(false);
+      console.error('Erro ao agendar consulta:', error);
+      showNotification('error', 'Erro ao agendar consulta. Tente novamente.');
+    }
   };
 
   return (

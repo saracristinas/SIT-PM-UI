@@ -150,3 +150,31 @@ export function analyzeSymptomSeverity(conversation) {
   // Padrão: baixa gravidade
   return 'BAIXA';
 }
+
+/**
+ * Detecta se o usuário quer agendar uma consulta
+ * @param {string} message - Mensagem do usuário
+ * @returns {boolean} True se detectar intenção de agendamento
+ */
+export function detectarIntencaoAgendamento(message) {
+  const messageLower = message.toLowerCase().trim();
+  
+  const palavrasChave = [
+    'agendar',
+    'marcar',
+    'consulta',
+    'agendamento',
+    'agendar consulta',
+    'marcar consulta',
+    'quero agendar',
+    'quero marcar',
+    'preciso agendar',
+    'preciso marcar',
+    'agenda',
+    'horario',
+    'horário',
+    'disponibilidade'
+  ];
+  
+  return palavrasChave.some(palavra => messageLower.includes(palavra));
+}

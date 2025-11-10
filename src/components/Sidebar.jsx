@@ -1,7 +1,7 @@
 import React from 'react'
-import { Calendar, FileText, Clock, Clipboard, Moon, LogOut, LayoutGrid, Bot, HeartPulse } from 'lucide-react'
+import { Calendar, FileText, Clock, Clipboard, Moon, LogOut, LayoutGrid, Bot, HeartPulse, User } from 'lucide-react'
 
-export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrentPage, sidebarOpen, setSidebarOpen }) {
+export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrentPage, sidebarOpen, setSidebarOpen, user, onLogout }) {
   const menuItems = [
     { id: 'inicio', label: 'Início', icon: LayoutGrid },
     { id: 'triagem', label: 'Triagem IA', icon: Bot },
@@ -85,28 +85,39 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
           darkMode ? 'border-gray-600' : 'border-gray-100'
         }`}>
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-emerald-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
-              S
-            </div>
+            {user?.avatar ? (
+              <img 
+                src={user.avatar} 
+                alt={user.name}
+                className="w-11 h-11 rounded-xl object-cover"
+              />
+            ) : (
+              <div className="w-11 h-11 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
+                {user?.name?.charAt(0).toUpperCase() || <User className="w-6 h-6" />}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <div className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
-                Sara Sales
+                {user?.name || 'Usuário'}
               </div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-emerald-600'}`}>
-                Paciente
+              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-emerald-600'} truncate`}>
+                {user?.email || 'Paciente'}
               </div>
             </div>
           </div>
         </div>
         
         {/* Sair */}
-        <button className={`w-full flex items-center justify-center gap-2 px-4 py-3 ${
-          darkMode 
-            ? 'text-gray-400 hover:bg-gray-700 hover:text-white' 
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-        } rounded-lg transition-all`}>
+        <button 
+          onClick={onLogout}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-3 ${
+            darkMode 
+              ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300' 
+              : 'text-red-600 hover:bg-red-50 hover:text-red-700'
+          } rounded-lg transition-all font-medium`}
+        >
           <LogOut className="w-4 h-4" />
-          <span className="text-sm font-medium">Sair do Sistema</span>
+          <span className="text-sm">Sair do Sistema</span>
         </button>
       </div>
     </div>

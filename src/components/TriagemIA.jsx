@@ -1,13 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, MessageSquare, Plus, Menu, X, Sparkles, AlertCircle, Trash2, Lightbulb, Calendar } from 'lucide-react';
-import { sendMessageToGemini, startTriagem, analyzeSymptomSeverity } from '../services/gemini';
+import { sendMessageToGemini, startTriagem, analyzeSymptomSeverity, detectarIntencaoAgendamento } from '../services/gemini';
+import { enviarEmailConsultaAgendada } from '../services/emailService';
+import CalendarioAgendamento from './CalendarioAgendamento';
 
-export default function TriagemIA({ darkMode = false }) {
+export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
   const [symptoms, setSymptoms] = useState('');
   const [activeTriagemId, setActiveTriagemId] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [showTriagensSidebar, setShowTriagensSidebar] = useState(false);
   const [triagens, setTriagens] = useState([]);
+  const [mostrarCalendario, setMostrarCalendario] = useState(false);
+  const [especialidadeRecomendada, setEspecialidadeRecomendada] = useState(null);
   const messagesEndRef = useRef(null);
 
   const activeTriagem = triagens.find(t => t.id === activeTriagemId);
@@ -77,16 +81,178 @@ export default function TriagemIA({ darkMode = false }) {
     ));
   };
 
+  // Detecta se a IA está recomendando agendamento de consulta
+  const detectarRecomendacaoEspecialidade = (textoIA) => {
+    const especialidades = ['Neurologia', 'Cardiologia', 'Dermatologia', 'Ortopedia', 'Pediatria', 'Ginecologia', 'Clínico Geral', 'Psiquiatria', 'neurologista', 'cardiologista', 'dermatologista'];
+    
+    // Procura padrões que indicam recomendação de especialidade
+    const padroes = [
+      /especialidade mais indicada.*?(?:é|seria).*?\*\*([^\*]+)\*\*/i,
+      /recomendo.*?consulta.*?com.*?\*\*([^\*]+)\*\*/i,
+      /sugiro.*?agendar.*?com.*?\*\*([^\*]+)\*\*/i,
+      /encaminhamento.*?para.*?\*\*([^\*]+)\*\*/i,
+      /agendar.*?consulta.*?com.*?um\s+(\w+)/i,
+      /consulta.*?com.*?um\s+(\w+)/i,
+      /neurologista|cardiologista|dermatologista|ortopedista/i
+    ];
+
+    for (const padrao of padroes) {
+      const match = textoIA.match(padrao);
+      if (match) {
+        let especialidade = match[1] ? match[1].trim() : match[0].trim();
+        
+        // Converte para nome da especialidade
+        if (especialidade.toLowerCase().includes('neurolog')) return 'Neurologia';
+        if (especialidade.toLowerCase().includes('cardio')) return 'Cardiologia';
+        if (especialidade.toLowerCase().includes('dermato')) return 'Dermatologia';
+        if (especialidade.toLowerCase().includes('ortoped')) return 'Ortopedia';
+        if (especialidade.toLowerCase().includes('pediatr')) return 'Pediatria';
+        if (especialidade.toLowerCase().includes('gineco')) return 'Ginecologia';
+        if (especialidade.toLowerCase().includes('psiquiatr')) return 'Psiquiatria';
+        
+        return especialidade;
+      }
+    }
+
+    // Verifica se há menção de especialidade em qualquer parte do texto
+    const textoLower = textoIA.toLowerCase();
+    if (textoLower.includes('neurolog')) return 'Neurologia';
+    if (textoLower.includes('cardio')) return 'Cardiologia';
+    if (textoLower.includes('dermato')) return 'Dermatologia';
+    if (textoLower.includes('ortoped')) return 'Ortopedia';
+    if (textoLower.includes('pediatr')) return 'Pediatria';
+    if (textoLower.includes('gineco')) return 'Ginecologia';
+    if (textoLower.includes('psiquiatr')) return 'Psiquiatria';
+    if (textoLower.includes('clínico geral')) return 'Clínico Geral';
+
+    return null;
+  };
+
+  // Função para quando usuário quer agendar
+  const handleQueroAgendar = () => {
+    setMostrarCalendario(true);
+    
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    const confirmacaoMessage = {
+      id: activeTriagem.messages.length + 1,
+      type: 'user',
+      text: 'Sim, gostaria de agendar uma consulta.',
+      time: timeStr
+    };
+
+    setTriagens(prev => prev.map(t => 
+      t.id === activeTriagemId 
+        ? { ...t, messages: [...t.messages, confirmacaoMessage] }
+        : t
+    ));
+  };
+
+  // Função quando consulta é agendada
+  const handleAgendarConsulta = async (dadosConsulta) => {
+    try {
+      // Busca dados do usuário do localStorage
+      const userDataString = localStorage.getItem('userData');
+      if (!userDataString) {
+        console.error('Usuário não encontrado');
+        return;
+      }
+
+      const userData = JSON.parse(userDataString);
+
+      // Nome da clínica
+      const nomeClinica = 'MediCenter';
+
+      // Cria objeto de consulta no formato esperado
+      const novaConsulta = {
+        id: Date.now(), // ID único baseado em timestamp
+        dataHora: `${dadosConsulta.data}T${dadosConsulta.hora}`,
+        tipo: 'presencial',
+        medico: `Médico de ${dadosConsulta.especialidade}`, // Mock - em produção viria do backend
+        especialidade: dadosConsulta.especialidade,
+        crm: 'A definir',
+        motivo: activeTriagem?.title || 'Consulta agendada via triagem',
+        status: 'agendada',
+        local: `${nomeClinica} - A definir`
+      };
+
+      // Salva a consulta usando a função do App.jsx
+      if (onAgendarConsulta) {
+        onAgendarConsulta(novaConsulta);
+        console.log('✅ Consulta salva com sucesso!');
+      }
+
+      // Envia o email de confirmação com o nome da clínica
+      const sucesso = await enviarEmailConsultaAgendada(userData, dadosConsulta, nomeClinica);
+
+      if (sucesso) {
+        console.log('✅ Email de confirmação enviado com sucesso!');
+      }
+
+      // Finaliza a triagem
+      handleFinalizarTriagem(activeTriagemId, 'AGENDADA');
+      
+      // Fecha o calendário após 5 segundos
+      setTimeout(() => {
+        setMostrarCalendario(false);
+        setEspecialidadeRecomendada(null);
+      }, 5000);
+
+    } catch (error) {
+      console.error('Erro ao agendar consulta:', error);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!symptoms.trim() || !activeTriagem) return;
 
     const now = new Date();
     const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
+    const userInput = symptoms.trim();
+
+    // 🔍 DETECTA INTENÇÃO DE AGENDAMENTO LOGO NO INÍCIO
+    const querAgendar = detectarIntencaoAgendamento(userInput);
+    
+    if (querAgendar) {
+      console.log('📅 Detectada intenção de agendamento!');
+      
+      const newUserMessage = {
+        id: activeTriagem.messages.length + 1,
+        type: 'user',
+        text: userInput,
+        time: timeStr
+      };
+
+      const botResponse = {
+        id: activeTriagem.messages.length + 2,
+        type: 'bot',
+        text: 'Perfeito! Vou abrir o calendário para você escolher a melhor data e horário para sua consulta. 📅',
+        time: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      setTriagens(prev => prev.map(t => 
+        t.id === activeTriagemId 
+          ? { ...t, messages: [...t.messages, newUserMessage, botResponse] }
+          : t
+      ));
+
+      setSymptoms('');
+      
+      // Aguarda um pouco para mostrar a mensagem, depois abre o calendário
+      setTimeout(() => {
+        setMostrarCalendario(true);
+        setEspecialidadeRecomendada('Clínico Geral'); // Define especialidade padrão
+      }, 1000);
+      
+      return; // Não precisa chamar a IA
+    }
+
     const newUserMessage = {
       id: activeTriagem.messages.length + 1,
       type: 'user',
-      text: symptoms,
+      text: userInput,
       time: timeStr
     };
 
@@ -101,8 +267,19 @@ export default function TriagemIA({ darkMode = false }) {
         ? { ...t, title: updatedTitle, messages: [...t.messages, newUserMessage] }
         : t
     ));
-
-    const userInput = symptoms.trim();
+    
+    // DETECTA SE USUÁRIO ESTÁ CONFIRMANDO AGENDAMENTO
+    const respostasPositivas = ['sim', 'yes', 'quero', 'gostaria', 'claro', 'com certeza', 'pode agendar'];
+    const usuarioQuerAgendar = respostasPositivas.some(resp => userInput.toLowerCase().includes(resp));
+    
+    // Se há especialidade recomendada E usuário confirma, mostra calendário
+    if (especialidadeRecomendada && usuarioQuerAgendar) {
+      setSymptoms('');
+      setMostrarCalendario(true);
+      console.log('📅 Mostrando calendário para agendamento');
+      return; // Não precisa chamar a IA
+    }
+    
     setSymptoms('');
     setIsTyping(true);
 
@@ -142,6 +319,13 @@ export default function TriagemIA({ darkMode = false }) {
           ? { ...t, messages: [...t.messages, botResponse] }
           : t
       ));
+
+      // Detecta se a IA recomendou uma especialidade
+      const especialidade = detectarRecomendacaoEspecialidade(aiResponse);
+      if (especialidade && !especialidadeRecomendada) {
+        setEspecialidadeRecomendada(especialidade);
+        console.log('🩺 Especialidade detectada:', especialidade);
+      }
 
       // Após 5+ mensagens, pode analisar gravidade automaticamente
       if (activeTriagem.messages.length >= 8 && activeTriagem.status === 'EM_ANDAMENTO') {
@@ -354,6 +538,30 @@ export default function TriagemIA({ darkMode = false }) {
                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* Botão para agendar consulta */}
+                {especialidadeRecomendada && !mostrarCalendario && !isTyping && (
+                  <div className="flex justify-center my-4">
+                    <button
+                      onClick={handleQueroAgendar}
+                      className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm sm:text-base"
+                    >
+                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+                      Sim, quero agendar uma consulta
+                    </button>
+                  </div>
+                )}
+
+                {/* Calendário de agendamento */}
+                {mostrarCalendario && (
+                  <div className="my-4">
+                    <CalendarioAgendamento
+                      darkMode={darkMode}
+                      onAgendarConsulta={handleAgendarConsulta}
+                      especialidade={especialidadeRecomendada}
+                    />
                   </div>
                 )}
                 

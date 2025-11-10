@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Check, Menu, X, Moon, HeartPulse } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import SITPMDashboard from './components/SITPMDashboard'
@@ -6,6 +6,7 @@ import TriagemIA from './components/TriagemIA'
 import Agendar from './components/Agendar'
 import Consultas from './components/Consultas'
 import Prontuario from './components/Prontuario'
+import Auth from './components/Auth'
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false)
@@ -14,6 +15,58 @@ export default function App() {
   const [showSuccessToast, setShowSuccessToast] = useState(false)
   const [toastMessage, setToastMessage] = useState({ title: '', subtitle: '' })
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [user, setUser] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Verifica se há um usuário logado ao carregar o app
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser))
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error)
+        localStorage.removeItem('user')
+      }
+    }
+    
+    // Carrega consultas do localStorage
+    const storedConsultas = localStorage.getItem('consultas')
+    if (storedConsultas) {
+      try {
+        setConsultas(JSON.parse(storedConsultas))
+      } catch (error) {
+        console.error('Erro ao carregar consultas:', error)
+      }
+    }
+    
+    setIsLoading(false)
+  }, [])
+
+  // Salva consultas no localStorage sempre que mudar
+  useEffect(() => {
+    if (consultas.length > 0) {
+      localStorage.setItem('consultas', JSON.stringify(consultas))
+    }
+  }, [consultas])
+
+  const handleAuthSuccess = (userData) => {
+    setUser(userData)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    setUser(null)
+    setCurrentPage('inicio')
+    setToastMessage({
+      title: 'Você saiu do sistema',
+      subtitle: 'Até logo!'
+    })
+    setShowSuccessToast(true)
+    setTimeout(() => {
+      setShowSuccessToast(false)
+    }, 3000)
+  }
 
   const handleAgendarConsulta = (novaConsulta) => {
     setConsultas([...consultas, novaConsulta])
@@ -76,7 +129,7 @@ export default function App() {
       case 'inicio':
         return <SITPMDashboard darkMode={darkMode} onNavigate={setCurrentPage} consultas={consultas} />
       case 'triagem':
-        return <TriagemIA darkMode={darkMode} />
+        return <TriagemIA darkMode={darkMode} onAgendarConsulta={handleAgendarConsulta} />
       case 'agendar':
         return <Agendar darkMode={darkMode} onNavigate={setCurrentPage} onAgendarConsulta={handleAgendarConsulta} />
       case 'consultas':
@@ -86,6 +139,23 @@ export default function App() {
       default:
         return <SITPMDashboard darkMode={darkMode} onNavigate={setCurrentPage} consultas={consultas} />
     }
+  }
+
+  // Loading inicial
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Carregando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Se não houver usuário logado, mostra tela de autenticação
+  if (!user) {
+    return <Auth darkMode={darkMode} onAuthSuccess={handleAuthSuccess} />
   }
 
   return (
@@ -134,6 +204,8 @@ export default function App() {
         setCurrentPage={setCurrentPage}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
+        user={user}
+        onLogout={handleLogout}
       />
       <div className="lg:ml-72 pt-16 lg:pt-0">
         {renderPage()}
