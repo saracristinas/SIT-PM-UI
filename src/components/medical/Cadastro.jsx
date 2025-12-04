@@ -79,21 +79,42 @@ export default function Cadastro({ darkMode = false, onSwitchToLogin, onCadastro
     setTimeout(() => {
       setIsLoading(false);
       
-      const mockUser = {
+      // Verifica se o email já está cadastrado
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const emailExists = registeredUsers.find(u => u.email.toLowerCase() === formData.email.toLowerCase());
+      
+      if (emailExists) {
+        setMessage({ 
+          type: 'error', 
+          text: 'Este email já está cadastrado. Faça login ou use outro email.' 
+        });
+        return;
+      }
+      
+      const newUser = {
         id: Date.now(),
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         birthDate: formData.birthDate,
-        avatar: null
+        password: formData.password, // Em produção, isso deve ser hash
+        avatar: null,
+        createdAt: new Date().toISOString()
       };
       
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('userData', JSON.stringify(mockUser)); // Para compatibilidade
+      // Adiciona o novo usuário à lista de registrados
+      registeredUsers.push(newUser);
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      
+      // Remove a senha antes de salvar na sessão
+      const { password, ...userWithoutPassword } = newUser;
+      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+      localStorage.setItem('userData', JSON.stringify(userWithoutPassword));
+      
       setMessage({ type: 'success', text: 'Cadastro realizado com sucesso!' });
       
       setTimeout(() => {
-        onCadastroSuccess?.(mockUser);
+        onCadastroSuccess?.(userWithoutPassword);
       }, 1500);
     }, 2000);
   };
@@ -105,6 +126,18 @@ export default function Cadastro({ darkMode = false, onSwitchToLogin, onCadastro
       
       console.log('✅ Cadastro Google bem-sucedido:', decoded);
       
+      // Verifica se o email já está cadastrado
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const emailExists = registeredUsers.find(u => u.email.toLowerCase() === decoded.email.toLowerCase());
+      
+      if (emailExists) {
+        setMessage({ 
+          type: 'error', 
+          text: 'Este email já está cadastrado. Faça login em vez disso.' 
+        });
+        return;
+      }
+      
       const googleUser = {
         id: decoded.sub,
         name: decoded.name,
@@ -112,8 +145,13 @@ export default function Cadastro({ darkMode = false, onSwitchToLogin, onCadastro
         phone: '', // Não vem do Google
         birthDate: '', // Não vem do Google
         avatar: decoded.picture,
-        provider: 'google'
+        provider: 'google',
+        createdAt: new Date().toISOString()
       };
+      
+      // Adiciona o novo usuário à lista de registrados
+      registeredUsers.push(googleUser);
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
       
       localStorage.setItem('user', JSON.stringify(googleUser));
       localStorage.setItem('userData', JSON.stringify(googleUser));

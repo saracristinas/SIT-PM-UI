@@ -12,6 +12,7 @@ export default function Login({ darkMode = false, onSwitchToCadastro, onLoginSuc
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(null);
+  const [showCadastroPrompt, setShowCadastroPrompt] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -35,29 +36,48 @@ export default function Login({ darkMode = false, onSwitchToCadastro, onLoginSuc
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage(null);
+    setShowCadastroPrompt(false);
     
     if (!validateForm()) return;
     
     setIsLoading(true);
     
-    // Simula chamada à API
+    // Simula chamada à API com verificação de cadastro
     setTimeout(() => {
       setIsLoading(false);
       
-      // Simulação de sucesso
-      const mockUser = {
-        id: 1,
-        name: 'Usuário Teste',
-        email: formData.email,
-        avatar: null
-      };
+      // Verifica se o email está cadastrado
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const userExists = registeredUsers.find(u => u.email.toLowerCase() === formData.email.toLowerCase());
       
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('userData', JSON.stringify(mockUser)); // Para compatibilidade
+      if (!userExists) {
+        setMessage({ 
+          type: 'error', 
+          text: 'Email não cadastrado. Por favor, crie uma conta primeiro.' 
+        });
+        setShowCadastroPrompt(true);
+        return;
+      }
+      
+      // Verifica a senha
+      if (userExists.password !== formData.password) {
+        setMessage({ 
+          type: 'error', 
+          text: 'Senha incorreta. Tente novamente.' 
+        });
+        setShowCadastroPrompt(false);
+        return;
+      }
+      
+      // Login bem-sucedido
+      const { password, ...userWithoutPassword } = userExists;
+      
+      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+      localStorage.setItem('userData', JSON.stringify(userWithoutPassword));
       setMessage({ type: 'success', text: 'Login realizado com sucesso!' });
       
       setTimeout(() => {
-        onLoginSuccess?.(mockUser);
+        onLoginSuccess?.(userWithoutPassword);
       }, 1000);
     }, 1500);
   };
@@ -70,22 +90,36 @@ export default function Login({ darkMode = false, onSwitchToCadastro, onLoginSuc
       
       console.log('✅ Login Google bem-sucedido:', decoded);
       
+      // Verifica se o email já está registrado
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const userExists = registeredUsers.find(u => u.email.toLowerCase() === decoded.email.toLowerCase());
+      
+      if (!userExists) {
+        setMessage({ 
+          type: 'error', 
+          text: 'Email não cadastrado. Por favor, crie uma conta primeiro.' 
+        });
+        setShowCadastroPrompt(true);
+        return;
+      }
+      
       const googleUser = {
-        id: decoded.sub,
-        name: decoded.name,
-        email: decoded.email,
+        ...userExists,
         avatar: decoded.picture,
         provider: 'google'
       };
       
-      // Salva no localStorage
-      localStorage.setItem('user', JSON.stringify(googleUser));
-      localStorage.setItem('userData', JSON.stringify(googleUser));
+      // Remove a senha antes de salvar
+      const { password, ...userWithoutPassword } = googleUser;
       
-      setMessage({ type: 'success', text: `Bem-vindo(a), ${googleUser.name}!` });
+      // Salva no localStorage
+      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+      localStorage.setItem('userData', JSON.stringify(userWithoutPassword));
+      
+      setMessage({ type: 'success', text: `Bem-vindo(a), ${userWithoutPassword.name}!` });
       
       setTimeout(() => {
-        onLoginSuccess?.(googleUser);
+        onLoginSuccess?.(userWithoutPassword);
       }, 1000);
       
     } catch (error) {
@@ -127,17 +161,30 @@ export default function Login({ darkMode = false, onSwitchToCadastro, onLoginSuc
         <div className="p-8">
           {/* Mensagem de Feedback */}
           {message && (
-            <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
+            <div className={`mb-6 p-4 rounded-lg ${
               message.type === 'success' 
                 ? 'bg-green-50 text-green-800 border border-green-200' 
                 : 'bg-red-50 text-red-800 border border-red-200'
             }`}>
-              {message.type === 'success' ? (
-                <CheckCircle className="w-5 h-5 flex-shrink-0" />
-              ) : (
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <div className="flex items-center gap-3">
+                {message.type === 'success' ? (
+                  <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                )}
+                <p className="text-sm font-medium">{message.text}</p>
+              </div>
+              
+              {/* Botão para ir ao cadastro quando email não existe */}
+              {showCadastroPrompt && (
+                <button
+                  type="button"
+                  onClick={onSwitchToCadastro}
+                  className="mt-3 w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:shadow-lg transition-all text-sm"
+                >
+                  Criar conta agora →
+                </button>
               )}
-              <p className="text-sm font-medium">{message.text}</p>
             </div>
           )}
 
