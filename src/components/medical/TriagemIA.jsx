@@ -179,16 +179,20 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
       const nomeClinica = 'MediCenter';
 
       // Cria objeto de consulta no formato esperado
+      const tipoConsulta = dadosConsulta.tipo || 'online';
+      const linkSalaOnline = dadosConsulta.linkSalaOnline || dadosConsulta.link || dadosConsulta.urlSala || 'https://meet.google.com/tqf-txzf-pwb';
+
       const novaConsulta = {
         id: Date.now(), // ID único baseado em timestamp
         dataHora: `${dadosConsulta.data}T${dadosConsulta.hora}`,
-        tipo: 'presencial',
+        tipo: tipoConsulta,
         medico: `Médico de ${dadosConsulta.especialidade}`, // Mock - em produção viria do backend
         especialidade: dadosConsulta.especialidade,
         crm: 'A definir',
         motivo: activeTriagem?.title || 'Consulta agendada via triagem',
         status: 'agendada',
-        local: `${nomeClinica} - A definir`,
+        local: tipoConsulta === 'online' ? 'Sala virtual (Google Meet)' : `${nomeClinica} - A definir`,
+        linkSalaOnline,
         lembreteEmail: dadosConsulta.lembreteEmail || false // Salva preferência de lembrete
       };
 

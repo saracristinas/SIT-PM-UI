@@ -226,6 +226,30 @@ export default function App() {
         try {
           // Obtém configuração de lembrete para esta consulta
           const configuracao = obterConfiguracaoLembrete(consulta.id);
+
+          // Se lembretes estão desabilitados, mas a consulta é online, enviar um único email com o link da sala virtual
+          if (!configuracao.habilitado) {
+            if (consulta.tipo === 'online') {
+              const flagKey = `link_unico_enviado_${consulta.id}`;
+              const jaEnviado = localStorage.getItem(flagKey);
+
+              if (!jaEnviado) {
+                console.log('📧 Enviando email único com link (lembretes desativados)...');
+                const resultado = await sendReminderEmail(consulta, (notificacao) => {
+                  setNotificacaoLembrete({
+                    ...notificacao,
+                    mensagem: notificacao.mensagem || `📧 Link da sala virtual enviado (opt-out de lembretes). Link: ${consulta.linkSalaOnline || consulta.link || consulta.urlSala || 'https://meet.google.com/tqf-txzf-pwb'}`
+                  });
+                });
+
+                if (resultado.success) {
+                  localStorage.setItem(flagKey, 'true');
+                  console.log('✅ Email único com link enviado.');
+                }
+              }
+            }
+            continue; // pula envio recorrente porque lembretes estão desativados
+          }
           
           // Obtém histórico de lembretes (timestamp do último envio)
           const historicoLembretesStr = localStorage.getItem(`lembrete_enviado_${consulta.id}`);
@@ -238,9 +262,10 @@ export default function App() {
             const resultado = await sendReminderEmail(consulta, (notificacao) => {
               console.log('📬 Callback recebido:', notificacao);
               // Mostra notificação no UI quando lembrete é enviado
+              const linkSalaOnline = consulta.linkSalaOnline || consulta.link || consulta.urlSala || (consulta.tipo === 'online' ? 'https://meet.google.com/tqf-txzf-pwb' : '');
               setNotificacaoLembrete({
                 ...notificacao,
-                mensagem: `📧 Email de lembrete enviado! Faltam ${notificacao.tempoRestante} para sua consulta com ${notificacao.consultaInfo.medico}.`
+                mensagem: `📧 Email de lembrete enviado! Faltam ${notificacao.tempoRestante} para sua consulta com ${notificacao.consultaInfo.medico}.${consulta.tipo === 'online' ? ` Link da sala: ${linkSalaOnline}` : ''}`
               });
             });
             

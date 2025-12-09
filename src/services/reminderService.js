@@ -120,6 +120,8 @@ export function agendarLembretes(consulta, configuracao = {}) {
 export function gerarEmailLembrete(consulta, tempoRestante, configuracaoLembrete = {}) {
   const { nome, email } = consulta.paciente || { nome: 'Paciente', email: '' };
   const { medico, especialidade, dataHora, tipo, local } = consulta;
+  // Fallback para Google Meet quando não houver link específico salvo
+  const linkSalaOnline = consulta.linkSalaOnline || consulta.link || consulta.urlSala || 'https://meet.google.com/tqf-txzf-pwb';
 
   const dataFormatada = new Date(dataHora).toLocaleDateString('pt-BR', {
     day: '2-digit',
@@ -428,6 +430,13 @@ export function gerarEmailLembrete(consulta, tempoRestante, configuracaoLembrete
             <div class="info-value">Consulta Online (Telemedicina)</div>
           </div>
         </div>
+        <div class="info-row">
+          <div class="info-icon">🔗</div>
+          <div class="info-text">
+            <div class="info-label">Sala Virtual</div>
+            <div class="info-value"><a href="${linkSalaOnline}" style="color: ${corTema}; font-weight: 700; text-decoration: none;">Entrar na sala</a></div>
+          </div>
+        </div>
         `}
       </div>
 
@@ -453,6 +462,14 @@ export function gerarEmailLembrete(consulta, tempoRestante, configuracaoLembrete
 
       <!-- CTA Button -->
       <div style="text-align: center; margin: 30px 0;">
+        ${tipo === 'online' ? `
+        <a href="${linkSalaOnline}" class="cta-button" style="display: inline-block; margin-bottom: 16px;">
+          💻 Entrar na sala virtual
+        </a>
+        <p style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+          Use esse link para entrar no horário combinado
+        </p>
+        ` : ''}
         <a href="${gerarLinkConfirmacao(consulta.id)}" class="cta-button">
           ✅ Confirmar Comparecimento
         </a>

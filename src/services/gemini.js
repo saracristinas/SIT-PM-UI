@@ -52,7 +52,9 @@ export async function sendMessageToGemini(messages) {
   console.log('🤖 Enviando mensagem para Gemini...');
   console.log('📊 Total de mensagens:', messages.length);
 
-  try {
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  async function attemptRequest(hasRetried = false) {
     // Converte o histórico de mensagens para o formato do Gemini
     const conversationText = messages
       .map(msg => `${msg.role === 'user' ? 'Paciente' : 'Assistente'}: ${msg.content}`)
@@ -62,9 +64,7 @@ export async function sendMessageToGemini(messages) {
 
     const requestBody = {
       contents: [{
-        parts: [{
-          text: fullPrompt
-        }]
+        parts: [{ text: fullPrompt }]
       }]
     };
 
@@ -79,17 +79,39 @@ export async function sendMessageToGemini(messages) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('❌ Erro da API Gemini:', errorData);
-      throw new Error(errorData.error?.message || 'Erro ao comunicar com Gemini');
+      const raw = await response.text();
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch (_) { /* ignore parse errors */ }
+      const apiMessage = parsed?.error?.message || raw || 'Erro ao comunicar com Gemini';
+      console.error('❌ Erro da API Gemini:', apiMessage);
+
+      const isRateLimit = response.status === 429 || /quota|rate limit/i.test(apiMessage);
+
+      if (isRateLimit && !hasRetried) {
+        console.warn('⏳ Limite/quota do Gemini atingido, tentando novamente após breve espera...');
+        await sleep(1200);
+        return attemptRequest(true);
+      }
+
+      const friendly = isRateLimit
+        ? 'Limite de uso do Gemini atingido. Aguarde 1-2 minutos e tente novamente. Se persistir, revise seu plano/ billing ou use uma chave paga.'
+        : apiMessage;
+
+      throw new Error(friendly);
     }
 
     const data = await response.json();
     console.log('✅ Resposta recebida do Gemini');
     
-    const aiResponse = data.candidates[0].content.parts[0].text;
+    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!aiResponse) {
+      throw new Error('Resposta vazia do Gemini');
+    }
     return aiResponse;
+  }
 
+  try {
+    return await attemptRequest(false);
   } catch (error) {
     console.error('❌ Erro no serviço Gemini:', error);
     console.error('Detalhes:', error.message);

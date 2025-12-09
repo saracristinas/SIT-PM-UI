@@ -444,24 +444,6 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                     
                     {consulta.status === 'agendada' && (
                       <>
-                        {/* Botão Configurar Lembretes */}
-                        <button
-                          onClick={() => {
-                            setSelectedConsultaForReminder(consulta);
-                            const config = obterConfiguracaoLembrete(consulta.id);
-                            setReminderConfig(config);
-                            setShowReminderConfig(true);
-                          }}
-                          className={`p-2 rounded-xl transition-all ${
-                            darkMode
-                              ? 'bg-yellow-900 text-yellow-100 hover:bg-yellow-800'
-                              : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
-                          }`}
-                          title="Configurar Lembretes"
-                        >
-                          <Bell className="w-3 h-3 sm:w-4 sm:h-4" />
-                        </button>
-                        
                         <button
                           onClick={() => {
                             setEditingConsulta(consulta);

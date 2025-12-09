@@ -37,7 +37,9 @@ export async function sendConsultaConfirmationEmail(userData, consultaData) {
  * Gera HTML do email de confirmação
  */
 export function generateEmailHTML(userData, consultaData) {
-  const { especialidade, medico, data, hora } = consultaData;
+  const { especialidade, medico, data, hora, tipo, local } = consultaData;
+  // Fallback padrão para Google Meet se não houver link específico salvo
+  const linkSalaOnline = consultaData.linkSalaOnline || consultaData.link || consultaData.urlSala || 'https://meet.google.com/tqf-txzf-pwb';
 
   return `
 <!DOCTYPE html>
@@ -311,6 +313,33 @@ export function generateEmailHTML(userData, consultaData) {
             </div>
           </div>
 
+          ${tipo === 'online' ? `
+          <div class="info-row">
+            <div class="info-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                <path d="M23 7l-7 5 7 5V7z"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <div class="info-label">Consulta Online</div>
+              <div class="info-value"><a href="${linkSalaOnline}" style="color: #10b981; font-weight: 700; text-decoration: none;">Entrar na sala virtual</a></div>
+            </div>
+          </div>
+          ` : `
+          <div class="info-row">
+            <div class="info-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V12H5v8a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9z"/>
+              </svg>
+            </div>
+            <div class="info-content">
+              <div class="info-label">Local</div>
+              <div class="info-value">${local || 'Clínica Principal'}</div>
+            </div>
+          </div>
+          `}
+
         </div>
       </div>
 
@@ -446,6 +475,8 @@ export async function enviarEmailLembreteConsulta(userData, consultaData) {
  */
 export async function sendReminderEmail(consulta, onLembreteEnviado = null) {
   const tempoRestante = calcularTempoRestante(consulta.dataHora);
+  const linkSalaOnline = consulta.linkSalaOnline || consulta.link || consulta.urlSala || 'https://meet.google.com/tqf-txzf-pwb';
+  const userData = consulta.paciente || JSON.parse(localStorage.getItem('user') || '{}');
   
   if (tempoRestante.passado) {
     console.log('⏰ Consulta já passou, lembrete não enviado');
@@ -454,12 +485,88 @@ export async function sendReminderEmail(consulta, onLembreteEnviado = null) {
 
   const configuracao = obterConfiguracaoLembrete(consulta.id);
   
+  // Caso o paciente tenha optado por não receber lembretes, enviamos apenas 1 email
+  // com o link da sala virtual (para teleconsultas) logo após a confirmação.
   if (!configuracao.habilitado) {
     console.log('🔕 Lembretes desabilitados para esta consulta');
+
+    if (consulta.tipo === 'online') {
+      const flagKey = `link_unico_enviado_${consulta.id}`;
+      const jaEnviado = localStorage.getItem(flagKey);
+
+      if (jaEnviado) {
+        console.log('ℹ️ Email único com link já enviado anteriormente.');
+        return { success: false, reason: 'lembretes_desabilitados_link_ja_enviado' };
+      }
+
+      try {
+        console.log('📧 Enviando email único com link da sala virtual (opt-out de lembretes)...');
+        const response = await fetch('http://localhost:3001/api/send-reminder', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            paciente: {
+              name: userData.name || userData.nome || 'Paciente',
+              email: userData.email
+            },
+            medico: consulta.medico,
+            especialidade: consulta.especialidade,
+            dataHora: consulta.dataHora,
+            tempoRestante: tempoRestante,
+            frequencia: configuracao.frequenciaMinutos,
+            nomeClinica: 'MediCenter',
+            linkSalaOnline,
+            onlyLink: true
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const text = (await response.text()).trim();
+        const result = text ? JSON.parse(text) : {};
+
+        if (result.success) {
+          localStorage.setItem(flagKey, 'true');
+          if (onLembreteEnviado) {
+            onLembreteEnviado({
+              consultaInfo: {
+                medico: consulta.medico,
+                especialidade: consulta.especialidade,
+                dataHora: consulta.dataHora
+              },
+              tempoRestante: tempoRestante.texto,
+              tipo: 'info',
+              mensagem: 'Link da sala virtual enviado (opt-out de lembretes).'
+            });
+          }
+          return { success: true, messageId: result.messageId, linkOnly: true };
+        }
+
+        throw new Error(result.message || 'Erro ao enviar email único com link');
+      } catch (error) {
+        console.error('❌ Erro ao enviar email único com link:', error.message);
+        if (onLembreteEnviado) {
+          onLembreteEnviado({
+            consultaInfo: {
+              medico: consulta.medico,
+              especialidade: consulta.especialidade,
+              dataHora: consulta.dataHora
+            },
+            tempoRestante: tempoRestante.texto,
+            tipo: 'error',
+            mensagem: 'Erro ao enviar link da sala virtual: ' + error.message
+          });
+        }
+        return { success: false, error: error.message, reason: 'link_unico_falha' };
+      }
+    }
+
     return { success: false, reason: 'lembretes_desabilitados' };
   }
-
-  const userData = consulta.paciente || JSON.parse(localStorage.getItem('user') || '{}');
 
   console.log('📧 Enviando lembrete por email real...');
   console.log('📧 Destinatário:', userData.email);
@@ -482,7 +589,8 @@ export async function sendReminderEmail(consulta, onLembreteEnviado = null) {
         dataHora: consulta.dataHora,
         tempoRestante: tempoRestante,
         frequencia: configuracao.frequenciaMinutos,
-        nomeClinica: 'MediCenter'
+        nomeClinica: 'MediCenter',
+        linkSalaOnline
       })
     });
 
