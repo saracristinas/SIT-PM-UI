@@ -436,6 +436,23 @@ export default function App() {
     setTimeout(() => setShowSuccessToast(false), 3000)
   }
 
+  const handleSalvarRegistroPosConsulta = (consultaId, registroPosConsulta) => {
+    setConsultas(prevConsultas =>
+      prevConsultas.map(consulta =>
+        consulta.id === consultaId
+          ? { ...consulta, registroPosConsulta: { ...registroPosConsulta, atualizadoEm: new Date().toISOString() } }
+          : consulta
+      )
+    )
+
+    setToastMessage({
+      title: 'Registro atualizado!',
+      subtitle: 'Informações pós-consulta salvas no prontuário.'
+    })
+    setShowSuccessToast(true)
+    setTimeout(() => setShowSuccessToast(false), 4000)
+  }
+
   const renderPage = () => {
     switch (currentPage) {
       case 'inicio':
@@ -447,7 +464,7 @@ export default function App() {
       case 'consultas':
         return <Consultas darkMode={darkMode} onNavigate={setCurrentPage} consultas={consultas} onEditarConsulta={handleEditarConsulta} onExcluirConsulta={handleExcluirConsulta} />
       case 'prontuario':
-        return <Prontuario darkMode={darkMode} />
+        return <Prontuario darkMode={darkMode} consultas={consultas} onSalvarRegistro={handleSalvarRegistroPosConsulta} />
       default:
         return <SITPMDashboard darkMode={darkMode} onNavigate={setCurrentPage} consultas={consultas} />
     }
