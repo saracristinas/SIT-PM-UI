@@ -52,9 +52,9 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
       label: 'Total', 
       value: consultasAtivas.length, 
       icon: Calendar, 
-      color: 'purple',
-      gradient: 'from-purple-500 to-purple-600',
-      bgLight: 'bg-purple-50',
+      color: 'blue',
+      gradient: 'from-blue-500 to-blue-600',
+      bgLight: 'bg-blue-50',
       textColor: 'text-[#111828]'
     }
   ];
@@ -85,7 +85,7 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-white to-purple-50'} py-6 px-4 sm:px-6 lg:px-8`}>
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-white to-cyan-50'} py-6 px-4 sm:px-6 lg:px-8`}>
       <div className="max-w-7xl mx-auto">
         {/* Header Premium */}
         <div className="relative mb-4 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-6 shadow-md">
@@ -105,14 +105,6 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                 </p>
               </div>
             </div>
-            
-            <button
-              onClick={() => onNavigate('agendar')}
-              className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-blue-500 text-white rounded-lg sm:rounded-xl text-sm font-semibold hover:bg-blue-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Nova Consulta
-            </button>
           </div>
         </div>
 
@@ -259,8 +251,8 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
           <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-3xl shadow-xl p-12`}>
             <div className="flex flex-col items-center justify-center">
               <div className="relative mb-8">
-                <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full"></div>
-                <div className="relative w-32 h-32 bg-gradient-to-br from-purple-400 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl">
+                <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full"></div>
+                <div className="relative w-32 h-32 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl flex items-center justify-center shadow-2xl">
                   <Calendar className="w-16 h-16 text-white" />
                 </div>
               </div>
@@ -277,7 +269,7 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
               {!searchTerm && (
                 <button
                   onClick={() => setShowSugestaoTriagemModal(true)}
-                  className="px-8 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transform hover:scale-105 flex items-center gap-2"
+                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transform hover:scale-105 flex items-center gap-2"
                 >
                   <Plus className="w-5 h-5" />
                   Agendar Primeira Consulta
@@ -308,7 +300,7 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                     <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 ${
                       consulta.tipo === 'presencial'
                         ? 'bg-blue-500'
-                        : 'bg-purple-500'
+                        : 'bg-blue-500'
                     }`}>
                       {consulta.tipo === 'presencial' ? (
                         <Building2 className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
@@ -376,7 +368,7 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${
                       consulta.tipo === 'presencial'
                         ? 'bg-blue-100 text-blue-700'
-                        : 'bg-purple-100 text-purple-700'
+                        : 'bg-cyan-100 text-cyan-700'
                     }`}>
                       {consulta.tipo === 'presencial' ? (
                         <>
@@ -420,8 +412,8 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                           }}
                           className={`p-2 rounded-xl transition-all ${
                             darkMode
-                              ? 'bg-purple-900 text-purple-100 hover:bg-purple-800'
-                              : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                              ? 'bg-blue-900 text-blue-100 hover:bg-blue-800'
+                              : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
                           }`}
                           title="Editar"
                         >
