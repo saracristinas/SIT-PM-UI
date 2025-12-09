@@ -12,6 +12,7 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
   const [filterStatus, setFilterStatus] = useState('todas');
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showSugestaoTriagemModal, setShowSugestaoTriagemModal] = useState(false);
 
   // USA AS CONSULTAS DO PROP (vindo do App.jsx) ao invés de estado local
   const consultas = consultasProp;
@@ -275,7 +276,7 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
               
               {!searchTerm && (
                 <button
-                  onClick={() => window.alert('Navegar para agendar')}
+                  onClick={() => setShowSugestaoTriagemModal(true)}
                   className="px-8 py-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transform hover:scale-105 flex items-center gap-2"
                 >
                   <Plus className="w-5 h-5" />
@@ -850,6 +851,94 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                         Sim, cancelar consulta
                       </>
                     )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Sugestão de Triagem com IA */}
+        {showSugestaoTriagemModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className={`max-w-lg w-full rounded-2xl shadow-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="p-6">
+                {/* Header com ícone */}
+                <div className="text-center mb-6">
+                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <Clock className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    Precisa de ajuda para escolher?
+                  </h3>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Temos uma assistente inteligente para te ajudar
+                  </p>
+                </div>
+
+                {/* Benefícios da Triagem IA */}
+                <div className={`rounded-xl p-4 mb-6 ${darkMode ? 'bg-emerald-900/20 border border-emerald-700' : 'bg-emerald-50 border border-emerald-200'}`}>
+                  <h4 className={`font-semibold mb-3 flex items-center gap-2 ${darkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>
+                    <Sparkles className="w-5 h-5" />
+                    Nossa Triagem com IA pode te ajudar:
+                  </h4>
+                  <ul className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span><strong>Identificar a especialidade ideal</strong> baseado nos seus sintomas</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span><strong>Descrever melhor seu caso</strong> para o médico entender</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span><strong>Fazer perguntas inteligentes</strong> sobre seus sintomas</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span><strong>Agendar automaticamente</strong> após a triagem</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Botões de ação */}
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      setShowSugestaoTriagemModal(false);
+                      onNavigate('triagem');
+                    }}
+                    className="w-full bg-gradient-to-r from-emerald-500 to-emerald-400 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    Sim, usar Triagem com IA
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowSugestaoTriagemModal(false);
+                      onNavigate('agendar');
+                    }}
+                    className={`w-full px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                      darkMode 
+                        ? 'bg-gray-700 text-white hover:bg-gray-600' 
+                        : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Calendar className="w-5 h-5" />
+                    Não, agendar manualmente
+                  </button>
+
+                  <button
+                    onClick={() => setShowSugestaoTriagemModal(false)}
+                    className={`w-full px-6 py-2 rounded-lg font-medium transition text-sm ${
+                      darkMode 
+                        ? 'text-gray-400 hover:text-gray-300' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    Cancelar
                   </button>
                 </div>
               </div>

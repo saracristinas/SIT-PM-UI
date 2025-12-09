@@ -5,10 +5,11 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
   const [showHistoricoModal, setShowHistoricoModal] = useState(false)
   const [filtroStatus, setFiltroStatus] = useState('todas') // 'todas', 'agendada', 'cancelada', 'concluida'
   const [selectedConsulta, setSelectedConsulta] = useState(null) // Consulta selecionada para ver detalhes
+  const [showSugestaoTriagemModal, setShowSugestaoTriagemModal] = useState(false) // Modal de sugestão de triagem
 
   // Controlar overflow do body quando modais estão abertos
   useEffect(() => {
-    if (showHistoricoModal || selectedConsulta) {
+    if (showHistoricoModal || selectedConsulta || showSugestaoTriagemModal) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = 'unset'
@@ -18,7 +19,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
     return () => {
       document.body.style.overflow = 'unset'
     }
-  }, [showHistoricoModal, selectedConsulta])
+  }, [showHistoricoModal, selectedConsulta, showSugestaoTriagemModal])
 
   // Encontrar próxima consulta agendada
   const proximaConsulta = consultas
@@ -172,22 +173,33 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                 <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>Histórico de Consultas</h3>
               </div>
               <button 
-                onClick={() => setShowHistoricoModal(true)}
+                onClick={() => {
+                  if (consultasAtivas.length === 0) {
+                    setShowSugestaoTriagemModal(true);
+                  } else {
+                    setShowHistoricoModal(true);
+                  }
+                }}
                 className="text-emerald-600 text-sm font-medium hover:underline"
               >
-                Ver todas
+                {consultasAtivas.length === 0 ? 'Agendar primeira' : 'Ver todas'}
               </button>
             </div>
             
             {consultasAtivas.length === 0 ? (
               <div 
-                onClick={() => onNavigate('consultas')}
+                onClick={() => setShowSugestaoTriagemModal(true)}
                 className="flex flex-col items-center justify-center py-12 cursor-pointer hover:opacity-80 transition"
               >
                 <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
                   <Calendar className="w-8 h-8 text-emerald-600" />
                 </div>
-                <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Nenhuma consulta agendada ainda</p>
+                <p className={`font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Nenhuma consulta agendada ainda
+                </p>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Clique aqui para agendar sua primeira consulta
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -546,6 +558,94 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                   >
                     Ver Todas Consultas
                     <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Sugestão de Triagem com IA */}
+        {showSugestaoTriagemModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className={`max-w-lg w-full rounded-2xl shadow-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="p-6">
+                {/* Header com ícone */}
+                <div className="text-center mb-6">
+                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <Clock className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    Precisa de ajuda para escolher?
+                  </h3>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Temos uma assistente inteligente para te ajudar
+                  </p>
+                </div>
+
+                {/* Benefícios da Triagem IA */}
+                <div className={`rounded-xl p-4 mb-6 ${darkMode ? 'bg-emerald-900/20 border border-emerald-700' : 'bg-emerald-50 border border-emerald-200'}`}>
+                  <h4 className={`font-semibold mb-3 flex items-center gap-2 ${darkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>
+                    <Clock className="w-5 h-5" />
+                    Nossa Triagem com IA pode te ajudar:
+                  </h4>
+                  <ul className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span><strong>Identificar a especialidade ideal</strong> baseado nos seus sintomas</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span><strong>Descrever melhor seu caso</strong> para o médico entender</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span><strong>Fazer perguntas inteligentes</strong> sobre seus sintomas</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span><strong>Agendar automaticamente</strong> após a triagem</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Botões de ação */}
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      setShowSugestaoTriagemModal(false);
+                      onNavigate('triagem');
+                    }}
+                    className="w-full bg-gradient-to-r from-emerald-500 to-emerald-400 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    <Clock className="w-5 h-5" />
+                    Sim, usar Triagem com IA
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setShowSugestaoTriagemModal(false);
+                      onNavigate('agendar');
+                    }}
+                    className={`w-full px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                      darkMode 
+                        ? 'bg-gray-700 text-white hover:bg-gray-600' 
+                        : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Calendar className="w-5 h-5" />
+                    Não, agendar manualmente
+                  </button>
+
+                  <button
+                    onClick={() => setShowSugestaoTriagemModal(false)}
+                    className={`w-full px-6 py-2 rounded-lg font-medium transition text-sm ${
+                      darkMode 
+                        ? 'text-gray-400 hover:text-gray-300' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    Cancelar
                   </button>
                 </div>
               </div>
