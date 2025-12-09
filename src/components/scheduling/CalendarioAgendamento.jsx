@@ -6,6 +6,31 @@ export default function CalendarioAgendamento({ darkMode = false, onAgendarConsu
   const [diaSelecionado, setDiaSelecionado] = useState(null);
   const [horarioSelecionado, setHorarioSelecionado] = useState(null);
   const [confirmado, setConfirmado] = useState(false);
+  const [lembreteEmail, setLembreteEmail] = useState(true); // Lembrete ativado por padrão
+
+  // Função para verificar se um horário já passou (para o dia atual)
+  const horarioJaPassou = (horario, diaInfo) => {
+    if (!diaInfo) return false;
+    
+    const agora = new Date();
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    const diaSelecionadoDate = new Date(diaInfo.data);
+    diaSelecionadoDate.setHours(0, 0, 0, 0);
+    
+    // Se não é hoje, não há problema
+    if (diaSelecionadoDate.getTime() !== hoje.getTime()) {
+      return false;
+    }
+    
+    // Se é hoje, verifica se o horário já passou
+    const [hora, minuto] = horario.split(':');
+    const horarioConsulta = new Date();
+    horarioConsulta.setHours(parseInt(hora), parseInt(minuto), 0, 0);
+    
+    return horarioConsulta <= agora;
+  };
 
   // Horários disponíveis
   const horariosDisponiveis = [
@@ -73,13 +98,20 @@ export default function CalendarioAgendamento({ darkMode = false, onAgendarConsu
     if (diaSelecionado && horarioSelecionado) {
       const dataConsulta = new Date(diaSelecionado.data);
       const [hora, minuto] = horarioSelecionado.split(':');
-      dataConsulta.setHours(parseInt(hora), parseInt(minuto));
+      dataConsulta.setHours(parseInt(hora), parseInt(minuto), 0, 0);
+
+      // Formata a data no formato local YYYY-MM-DD
+      const ano = dataConsulta.getFullYear();
+      const mes = String(dataConsulta.getMonth() + 1).padStart(2, '0');
+      const dia = String(dataConsulta.getDate()).padStart(2, '0');
+      const dataFormatada = `${ano}-${mes}-${dia}`;
 
       onAgendarConsulta({
-        data: dataConsulta.toISOString().split('T')[0],
+        data: dataFormatada,
         hora: horarioSelecionado,
         especialidade: especialidade,
-        dataCompleta: dataConsulta
+        dataCompleta: dataConsulta,
+        lembreteEmail: lembreteEmail // Adiciona preferência de lembrete
       });
       
       setConfirmado(true);
@@ -200,30 +232,56 @@ export default function CalendarioAgendamento({ darkMode = false, onAgendarConsu
               </h4>
             </div>
             <div className="grid grid-cols-4 sm:grid-cols-4 gap-1 sm:gap-1.5 max-h-32 overflow-y-auto">
-              {horariosDisponiveis.map((horario) => (
-                <button
-                  key={horario}
-                  onClick={() => setHorarioSelecionado(horario)}
-                  className={`
-                    py-1 px-1.5 rounded-md text-[10px] sm:text-xs font-semibold transition-all
-                    ${horarioSelecionado === horario
-                      ? 'bg-emerald-500 text-white shadow-md'
-                      : darkMode
-                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
-                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
-                    }
-                  `}
-                >
-                  {horario}
-                </button>
-              ))}
+              {horariosDisponiveis.map((horario) => {
+                const horarioPassou = horarioJaPassou(horario, diaSelecionado);
+                
+                return (
+                  <button
+                    key={horario}
+                    onClick={() => !horarioPassou && setHorarioSelecionado(horario)}
+                    disabled={horarioPassou}
+                    className={`
+                      py-1 px-1.5 rounded-md text-[10px] sm:text-xs font-semibold transition-all
+                      ${horarioPassou
+                        ? darkMode
+                          ? 'bg-gray-800 text-gray-600 cursor-not-allowed line-through'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed line-through'
+                        : horarioSelecionado === horario
+                        ? 'bg-emerald-500 text-white shadow-md'
+                        : darkMode
+                        ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }
+                    `}
+                  >
+                    {horario}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* Botão Confirmar */}
+        {/* Checkbox de Lembrete e Botão Confirmar */}
         {diaSelecionado && horarioSelecionado && (
           <div className="mt-3 pt-2.5 border-t" style={{ borderColor: darkMode ? '#374151' : '#e5e7eb' }}>
+            {/* Checkbox Lembrete por Email */}
+            <div className="mb-2.5 flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="lembreteEmail"
+                checked={lembreteEmail}
+                onChange={(e) => setLembreteEmail(e.target.checked)}
+                className="mt-0.5 w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2 cursor-pointer"
+              />
+              <label
+                htmlFor="lembreteEmail"
+                className={`text-xs cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+              >
+                📧 <strong>Enviar lembrete por email</strong> antes da consulta
+              </label>
+            </div>
+            
             <button
               onClick={confirmarAgendamento}
               className="w-full bg-gradient-to-r from-emerald-500 to-emerald-400 text-white py-2 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-1.5 text-xs sm:text-sm"

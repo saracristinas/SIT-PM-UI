@@ -109,9 +109,12 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
       // Obter dados do usuário logado
       const userData = JSON.parse(localStorage.getItem('user') || '{}');
       
-      // Extrair data e hora do datetime
+      // Extrair data e hora do datetime usando horário local
       const dateTime = new Date(formData.datetime);
-      const data = dateTime.toISOString().split('T')[0];
+      const ano = dateTime.getFullYear();
+      const mes = String(dateTime.getMonth() + 1).padStart(2, '0');
+      const dia = String(dateTime.getDate()).padStart(2, '0');
+      const data = `${ano}-${mes}-${dia}`;
       const hora = dateTime.toTimeString().split(' ')[0].substring(0, 5);
       
       // Criar objeto de consulta

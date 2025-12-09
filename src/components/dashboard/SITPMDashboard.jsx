@@ -25,8 +25,8 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
     .filter(c => c.status === 'agendada')
     .sort((a, b) => new Date(a.dataHora) - new Date(b.dataHora))[0]
 
-  // Contar apenas consultas não canceladas
-  const consultasAtivas = consultas.filter(c => c.status !== 'cancelada');
+  // Contar apenas consultas não canceladas e não perdidas
+  const consultasAtivas = consultas.filter(c => c.status !== 'cancelada' && c.status !== 'nao_compareceu');
   const consultasAgendadas = consultas.filter(c => c.status === 'agendada');
 
   // Filtrar consultas para o histórico

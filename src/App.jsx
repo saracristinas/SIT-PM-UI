@@ -17,6 +17,8 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [consultasPendentes, setConsultasPendentes] = useState([]) // Consultas passadas pendentes de confirmação
+  const [showConfirmacaoModal, setShowConfirmacaoModal] = useState(false)
 
   // Verifica se há um usuário logado ao carregar o app
   useEffect(() => {
@@ -53,6 +55,63 @@ export default function App() {
     localStorage.setItem('consultas', JSON.stringify(consultas))
     console.log('📝 Consultas salvas no localStorage:', consultas.length)
   }, [consultas])
+
+  // Verifica consultas passadas que precisam de confirmação
+  useEffect(() => {
+    const agora = new Date();
+    const consultasPassadas = consultas.filter(c => {
+      if (c.status !== 'agendada') return false;
+      const dataConsulta = new Date(c.dataHora);
+      return dataConsulta < agora; // Consulta já passou
+    });
+
+    if (consultasPassadas.length > 0) {
+      setConsultasPendentes(consultasPassadas);
+      setShowConfirmacaoModal(true);
+    }
+  }, [consultas, currentPage]); // Verifica quando mudar de página
+
+  // Sistema de lembretes - Verifica se há consultas próximas (24h antes)
+  useEffect(() => {
+    const verificarLembretes = () => {
+      const agora = new Date();
+      const em24h = new Date(agora.getTime() + 24 * 60 * 60 * 1000);
+
+      consultas.forEach(consulta => {
+        if (consulta.status === 'agendada' && consulta.lembreteEmail) {
+          const dataConsulta = new Date(consulta.dataHora);
+          
+          // Se a consulta está entre agora e 24h, e ainda não enviou lembrete
+          if (dataConsulta > agora && dataConsulta <= em24h && !consulta.lembreteEnviado) {
+            // Marca que o lembrete foi enviado
+            setConsultas(consultas.map(c => 
+              c.id === consulta.id 
+                ? { ...c, lembreteEnviado: true }
+                : c
+            ));
+
+            // Envia o lembrete (simulado)
+            console.log(`📧 Enviando lembrete para consulta: ${consulta.especialidade}`);
+            
+            setToastMessage({
+              title: '📧 Lembrete enviado!',
+              subtitle: `Você tem consulta amanhã às ${new Date(consulta.dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+            });
+            setShowSuccessToast(true);
+            setTimeout(() => setShowSuccessToast(false), 5000);
+          }
+        }
+      });
+    };
+
+    // Verifica a cada 1 hora (em produção seria um cronjob no backend)
+    const intervalo = setInterval(verificarLembretes, 60 * 60 * 1000);
+    
+    // Verifica imediatamente ao carregar
+    verificarLembretes();
+
+    return () => clearInterval(intervalo);
+  }, [consultas]);
 
   const handleAuthSuccess = (userData) => {
     setUser(userData)
@@ -126,6 +185,48 @@ export default function App() {
     setTimeout(() => {
       setShowSuccessToast(false)
     }, 5000)
+  }
+
+  // Confirma que o usuário compareceu à consulta
+  const handleConfirmarComparecimento = (consultaId) => {
+    setConsultas(consultas.map(consulta =>
+      consulta.id === consultaId
+        ? { ...consulta, status: 'concluida' }
+        : consulta
+    ))
+    
+    // Remove da lista de pendentes
+    setConsultasPendentes(consultasPendentes.filter(c => c.id !== consultaId))
+    
+    setToastMessage({
+      title: 'Consulta confirmada!',
+      subtitle: 'Obrigado por confirmar seu comparecimento.'
+    })
+    setShowSuccessToast(true)
+    setTimeout(() => setShowSuccessToast(false), 3000)
+  }
+
+  // Não compareceu - oferece reagendamento
+  const handleNaoCompareceu = (consultaId) => {
+    setConsultas(consultas.map(consulta =>
+      consulta.id === consultaId
+        ? { ...consulta, status: 'nao_compareceu' }
+        : consulta
+    ))
+    
+    // Remove da lista de pendentes
+    setConsultasPendentes(consultasPendentes.filter(c => c.id !== consultaId))
+    
+    // Redireciona para página de agendamento
+    setCurrentPage('agendar')
+    setShowConfirmacaoModal(false)
+    
+    setToastMessage({
+      title: 'Vamos reagendar?',
+      subtitle: 'Escolha uma nova data para sua consulta.'
+    })
+    setShowSuccessToast(true)
+    setTimeout(() => setShowSuccessToast(false), 3000)
   }
 
   const renderPage = () => {
@@ -225,6 +326,87 @@ export default function App() {
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm sm:text-base truncate">{toastMessage.title}</p>
               <p className="text-xs sm:text-sm text-emerald-100 truncate">{toastMessage.subtitle}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmação de Comparecimento */}
+      {showConfirmacaoModal && consultasPendentes.length > 0 && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className={`max-w-md w-full rounded-2xl shadow-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Check className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    Confirme seu Comparecimento
+                  </h3>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Você teve consulta(s) agendada(s)
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {consultasPendentes.map((consulta) => (
+                  <div 
+                    key={consulta.id}
+                    className={`p-4 rounded-xl border-2 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}
+                  >
+                    <div className="mb-3">
+                      <p className={`font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {consulta.especialidade}
+                      </p>
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        📅 {new Date(consulta.dataHora).toLocaleDateString('pt-BR', { 
+                          day: '2-digit', 
+                          month: 'long', 
+                          year: 'numeric' 
+                        })} às {new Date(consulta.dataHora).toLocaleTimeString('pt-BR', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </p>
+                      <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        🩺 {consulta.medico}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleConfirmarComparecimento(consulta.id)}
+                        className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm"
+                      >
+                        ✓ Fui à consulta
+                      </button>
+                      <button
+                        onClick={() => handleNaoCompareceu(consulta.id)}
+                        className={`flex-1 px-4 py-2 rounded-lg font-semibold transition text-sm ${
+                          darkMode 
+                            ? 'bg-gray-600 hover:bg-gray-500 text-white' 
+                            : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                        }`}
+                      >
+                        ✗ Não fui
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setShowConfirmacaoModal(false)}
+                className={`w-full mt-4 px-4 py-2 rounded-lg font-medium transition text-sm ${
+                  darkMode 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+              >
+                Fechar
+              </button>
             </div>
           </div>
         </div>

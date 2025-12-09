@@ -21,12 +21,12 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
     const matchSearch = c.medico.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         c.especialidade.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         c.motivo.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchStatus && matchSearch && c.status !== 'cancelada';
+    return matchStatus && matchSearch && c.status !== 'cancelada' && c.status !== 'nao_compareceu';
   });
 
   const consultasAgendadas = consultas.filter(c => c.status === 'agendada');
   const consultasConcluidas = consultas.filter(c => c.status === 'concluida');
-  const consultasAtivas = consultas.filter(c => c.status !== 'cancelada');
+  const consultasAtivas = consultas.filter(c => c.status !== 'cancelada' && c.status !== 'nao_compareceu');
 
   const stats = [
     { 

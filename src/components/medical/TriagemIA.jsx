@@ -188,7 +188,8 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
         crm: 'A definir',
         motivo: activeTriagem?.title || 'Consulta agendada via triagem',
         status: 'agendada',
-        local: `${nomeClinica} - A definir`
+        local: `${nomeClinica} - A definir`,
+        lembreteEmail: dadosConsulta.lembreteEmail || false // Salva preferência de lembrete
       };
 
       // Salva a consulta usando a função do App.jsx
@@ -203,13 +204,17 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
       const now = new Date();
       const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
+      // Formata a data corretamente (evita problema de fuso horário)
+      const [ano, mes, dia] = dadosConsulta.data.split('-');
+      const dataFormatada = `${dia}/${mes}/${ano}`;
+
       // Adiciona mensagem de confirmação no chat
       const mensagemConfirmacao = {
         id: activeTriagem.messages.length + 1,
         type: 'bot',
         text: sucesso 
-          ? `✅ **Consulta agendada com sucesso!**\n\n📅 Data: ${new Date(dadosConsulta.data).toLocaleDateString('pt-BR')}\n⏰ Horário: ${dadosConsulta.hora}\n🏥 Especialidade: ${dadosConsulta.especialidade}\n\nUm email de confirmação foi enviado para ${userData.email}.\n\nObrigado por usar nossos serviços! 😊`
-          : `✅ **Consulta agendada!**\n\n📅 Data: ${new Date(dadosConsulta.data).toLocaleDateString('pt-BR')}\n⏰ Horário: ${dadosConsulta.hora}\n🏥 Especialidade: ${dadosConsulta.especialidade}\n\nSua consulta foi registrada com sucesso!`,
+          ? `✅ **Consulta agendada com sucesso!**\n\n📅 Data: ${dataFormatada}\n⏰ Horário: ${dadosConsulta.hora}\n🏥 Especialidade: ${dadosConsulta.especialidade}\n\nUm email de confirmação foi enviado para ${userData.email}.\n\nObrigado por usar nossos serviços! 😊`
+          : `✅ **Consulta agendada!**\n\n📅 Data: ${dataFormatada}\n⏰ Horário: ${dadosConsulta.hora}\n🏥 Especialidade: ${dadosConsulta.especialidade}\n\nSua consulta foi registrada com sucesso!`,
         time: timeStr
       };
 
