@@ -25,9 +25,13 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
     .filter(c => c.status === 'agendada')
     .sort((a, b) => new Date(a.dataHora) - new Date(b.dataHora))[0]
 
+  // Contar apenas consultas não canceladas
+  const consultasAtivas = consultas.filter(c => c.status !== 'cancelada');
+  const consultasAgendadas = consultas.filter(c => c.status === 'agendada');
+
   // Filtrar consultas para o histórico
   const consultasFiltradas = filtroStatus === 'todas' 
-    ? consultas 
+    ? consultasAtivas 
     : consultas.filter(c => c.status === filtroStatus)
 
   return (
@@ -82,7 +86,9 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
               <Calendar className="w-6 h-6 text-lime-600" />
             </div>
             <h3 className={`font-bold text-lg mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Minhas Consultas</h3>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>0 agendamento(s)</p>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              {consultasAgendadas.length} agendamento(s)
+            </p>
           </div>
 
           <div 
@@ -173,7 +179,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
               </button>
             </div>
             
-            {consultas.length === 0 ? (
+            {consultasAtivas.length === 0 ? (
               <div 
                 onClick={() => onNavigate('consultas')}
                 className="flex flex-col items-center justify-center py-12 cursor-pointer hover:opacity-80 transition"
@@ -185,7 +191,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
               </div>
             ) : (
               <div className="space-y-3">
-                {consultas.slice(0, 3).map((consulta, index) => (
+                {consultasAtivas.slice(0, 3).map((consulta, index) => (
                   <div
                     key={index}
                     className={`p-4 rounded-lg border ${

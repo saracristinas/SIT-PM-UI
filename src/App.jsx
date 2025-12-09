@@ -34,10 +34,15 @@ export default function App() {
     const storedConsultas = localStorage.getItem('consultas')
     if (storedConsultas) {
       try {
-        setConsultas(JSON.parse(storedConsultas))
+        const parsed = JSON.parse(storedConsultas)
+        setConsultas(parsed)
+        console.log('✅ Consultas carregadas do localStorage:', parsed.length)
       } catch (error) {
         console.error('Erro ao carregar consultas:', error)
+        setConsultas([])
       }
+    } else {
+      console.log('ℹ️ Nenhuma consulta encontrada no localStorage')
     }
     
     setIsLoading(false)
@@ -45,9 +50,8 @@ export default function App() {
 
   // Salva consultas no localStorage sempre que mudar
   useEffect(() => {
-    if (consultas.length > 0) {
-      localStorage.setItem('consultas', JSON.stringify(consultas))
-    }
+    localStorage.setItem('consultas', JSON.stringify(consultas))
+    console.log('📝 Consultas salvas no localStorage:', consultas.length)
   }, [consultas])
 
   const handleAuthSuccess = (userData) => {

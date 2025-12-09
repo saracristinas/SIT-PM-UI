@@ -13,42 +13,8 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
-  // Mock de consultas
-  const [consultas, setConsultas] = useState(consultasProp.length > 0 ? consultasProp : [
-    {
-      id: 1,
-      dataHora: '2025-11-15T14:30',
-      tipo: 'presencial',
-      medico: 'Dra. Ana Silva',
-      especialidade: 'Cardiologia',
-      crm: 'CRM 12345-SP',
-      motivo: 'Consulta de rotina - Check-up cardiovascular',
-      status: 'agendada',
-      local: 'Clínica São Lucas - Sala 305'
-    },
-    {
-      id: 2,
-      dataHora: '2025-11-20T10:00',
-      tipo: 'online',
-      medico: 'Dr. Pedro Santos',
-      especialidade: 'Clínico Geral',
-      crm: 'CRM 67890-SP',
-      motivo: 'Acompanhamento pós-exame',
-      status: 'agendada',
-      local: 'Teleconsulta via Google Meet'
-    },
-    {
-      id: 3,
-      dataHora: '2025-10-28T16:00',
-      tipo: 'presencial',
-      medico: 'Dra. Maria Costa',
-      especialidade: 'Ortopedia',
-      crm: 'CRM 54321-SP',
-      motivo: 'Dor no joelho esquerdo',
-      status: 'concluida',
-      local: 'Hospital Central - Bloco B'
-    }
-  ]);
+  // USA AS CONSULTAS DO PROP (vindo do App.jsx) ao invés de estado local
+  const consultas = consultasProp;
 
   const consultasFiltradas = consultas.filter(c => {
     const matchStatus = filterStatus === 'todas' || c.status === filterStatus;
@@ -95,7 +61,10 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
   const handleExcluir = (id) => {
     setIsDeleting(true);
     setTimeout(() => {
-      setConsultas(consultas.map(c => c.id === id ? { ...c, status: 'cancelada' } : c));
+      // Chama a função do App.jsx para atualizar o estado global
+      if (onExcluirConsulta) {
+        onExcluirConsulta(id);
+      }
       setIsDeleting(false);
       setDeletingConsulta(null);
     }, 1000);
@@ -104,7 +73,10 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
   const handleEditar = (id, data) => {
     setIsSaving(true);
     setTimeout(() => {
-      setConsultas(consultas.map(c => c.id === id ? { ...c, ...data } : c));
+      // Chama a função do App.jsx para atualizar o estado global
+      if (onEditarConsulta) {
+        onEditarConsulta(id, data);
+      }
       setIsSaving(false);
       setEditingConsulta(null);
       setEditForm({});
