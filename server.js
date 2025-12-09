@@ -706,6 +706,304 @@ ${nomeClinica || 'MediCenter'} - Sistema Inteligente de Triagem
   }
 });
 
+// Rota para enviar email de cancelamento de consulta
+app.post('/api/send-cancellation', async (req, res) => {
+  try {
+    const { paciente, medico, especialidade, dataHora, motivo, nomeClinica } = req.body;
+
+    if (!paciente || !paciente.email || !medico || !dataHora) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dados incompletos para envio de email de cancelamento'
+      });
+    }
+
+    console.log('📧 Preparando email de cancelamento...');
+    console.log('📧 Destinatário:', paciente.email);
+
+    const transporter = createTransporter();
+    await transporter.verify();
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cancelamento de Consulta</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+    .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); padding: 40px 20px; text-align: center; color: white; }
+    .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
+    .content { padding: 40px; }
+    .info-box { background: #FEE2E2; border-left: 4px solid #EF4444; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #FECACA; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #666; font-weight: 600; }
+    .info-value { color: #333; font-weight: 700; }
+    .alert-box { background: #FEF2F2; border: 2px solid #FCA5A5; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .alert-title { font-size: 14px; font-weight: 700; color: #DC2626; margin-bottom: 10px; }
+    .alert-text { font-size: 14px; color: #991B1B; line-height: 1.6; }
+    .cta-button { display: inline-block; background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%); color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 700; margin: 20px 0; text-align: center; }
+    .footer { background: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e2e8f0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>❌ Consulta Cancelada</h1>
+    </div>
+    
+    <div class="content">
+      <div style="font-size: 16px; color: #333; margin-bottom: 20px;">
+        Olá <strong>${paciente.name || 'Paciente'}</strong>,
+        <br><br>
+        Sua consulta foi <strong>cancelada com sucesso</strong>. Abaixo estão os detalhes:
+      </div>
+
+      <div class="info-box">
+        <div class="info-row">
+          <span class="info-label">👨‍⚕️ MÉDICO:</span>
+          <span class="info-value">${medico}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">🏥 ESPECIALIDADE:</span>
+          <span class="info-value">${especialidade}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">📅 DATA:</span>
+          <span class="info-value">${new Date(dataHora).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">⏰ HORÁRIO:</span>
+          <span class="info-value">${new Date(dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      </div>
+
+      <div class="alert-box">
+        <div class="alert-title">📌 Motivo do Cancelamento:</div>
+        <div class="alert-text">${motivo || 'Cancelado pelo paciente'}</div>
+      </div>
+
+      <div style="background: #F0F9FF; border-left: 4px solid #3B82F6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="color: #1E40AF; font-weight: 600; margin-bottom: 10px;">💡 Próximos passos:</p>
+        <ul style="margin: 0; padding-left: 20px; color: #1E40AF;">
+          <li>Você pode agendar uma nova consulta a qualquer momento no sistema</li>
+          <li>Se precisar de suporte, entre em contato conosco</li>
+          <li>Seus dados e histórico permanecem salvos</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p><strong>${nomeClinica || 'MediCenter'}</strong> - Sistema Inteligente de Triagem</p>
+      <p>Este é um email automático. Não responda diretamente.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    const mailOptions = {
+      from: {
+        name: process.env.EMAIL_FROM_NAME || 'MediCenter',
+        address: process.env.SMTP_USER
+      },
+      to: paciente.email,
+      subject: `❌ Consulta Cancelada - ${especialidade}`,
+      html: htmlContent,
+      text: `
+CONSULTA CANCELADA
+
+Olá ${paciente.name},
+
+Sua consulta foi cancelada.
+
+Detalhes:
+- Médico: ${medico}
+- Especialidade: ${especialidade}
+- Data: ${new Date(dataHora).toLocaleDateString('pt-BR')}
+- Horário: ${new Date(dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+- Motivo: ${motivo || 'Cancelado pelo paciente'}
+
+${nomeClinica || 'MediCenter'} - Sistema Inteligente de Triagem
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log('✅ Email de cancelamento enviado com sucesso!');
+
+    res.json({
+      success: true,
+      message: 'Email de cancelamento enviado com sucesso',
+      messageId: info.messageId,
+      recipient: paciente.email
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao enviar email de cancelamento:', error);
+    
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao enviar email de cancelamento',
+      error: error.message
+    });
+  }
+});
+
+// Rota para enviar email de modificação de consulta
+app.post('/api/send-modification', async (req, res) => {
+  try {
+    const { paciente, medico, especialidade, dataHoraAnterior, dataHoraNovaç, novaData, novoHorario, nomeClinica } = req.body;
+
+    if (!paciente || !paciente.email || !medico) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dados incompletos para envio de email de modificação'
+      });
+    }
+
+    console.log('📧 Preparando email de modificação...');
+    console.log('📧 Destinatário:', paciente.email);
+
+    const transporter = createTransporter();
+    await transporter.verify();
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modificação de Consulta</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+    .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); padding: 40px 20px; text-align: center; color: white; }
+    .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
+    .content { padding: 40px; }
+    .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+    .comparison-box { background: #F0F9FF; border: 2px solid #3B82F6; border-radius: 8px; padding: 15px; }
+    .comparison-title { font-size: 12px; font-weight: 700; color: #1E40AF; text-transform: uppercase; margin-bottom: 10px; }
+    .comparison-content { font-size: 14px; color: #333; }
+    .arrow { text-align: center; padding: 20px 0; font-size: 24px; color: #3B82F6; }
+    .info-box { background: #DBEAFE; border-left: 4px solid #3B82F6; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .footer { background: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e2e8f0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📝 Consulta Modificada</h1>
+    </div>
+    
+    <div class="content">
+      <div style="font-size: 16px; color: #333; margin-bottom: 20px;">
+        Olá <strong>${paciente.name || 'Paciente'}</strong>,
+        <br><br>
+        Sua consulta foi <strong>modificada com sucesso</strong>. Confira os novos detalhes:
+      </div>
+
+      <div class="comparison">
+        <div class="comparison-box">
+          <div class="comparison-title">❌ Data Anterior</div>
+          <div class="comparison-content">
+            <strong>${new Date(dataHoraAnterior).toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}</strong><br>
+            ${new Date(dataHoraAnterior).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          </div>
+        </div>
+        <div class="comparison-box">
+          <div class="comparison-title">✅ Nova Data</div>
+          <div class="comparison-content">
+            <strong>${novaData}</strong><br>
+            ${novoHorario}
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div style="margin-bottom: 10px;">
+          <p style="margin: 0; font-weight: 600; color: #1E40AF;">👨‍⚕️ Médico:</p>
+          <p style="margin: 5px 0 0 0; color: #333;">${medico}</p>
+        </div>
+        <div>
+          <p style="margin: 10px 0 0 0; font-weight: 600; color: #1E40AF;">🏥 Especialidade:</p>
+          <p style="margin: 5px 0 0 0; color: #333;">${especialidade}</p>
+        </div>
+      </div>
+
+      <div style="background: #F0F9FF; border: 2px solid #3B82F6; border-radius: 8px; padding: 15px; text-align: center;">
+        <p style="margin: 0; color: #1E40AF; font-weight: 600;">📌 Lembre-se:</p>
+        <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #1E40AF; text-align: left;">
+          <li>Chegue 15 minutos antes do horário</li>
+          <li>Leve seu documento e cartão de convênio</li>
+          <li>Cancele com 24h de antecedência se necessário</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p><strong>${nomeClinica || 'MediCenter'}</strong> - Sistema Inteligente de Triagem</p>
+      <p>Este é um email automático. Não responda diretamente.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    const mailOptions = {
+      from: {
+        name: process.env.EMAIL_FROM_NAME || 'MediCenter',
+        address: process.env.SMTP_USER
+      },
+      to: paciente.email,
+      subject: `📝 Consulta Modificada - Nova data: ${novaData} às ${novoHorario}`,
+      html: htmlContent,
+      text: `
+CONSULTA MODIFICADA
+
+Olá ${paciente.name},
+
+Sua consulta foi modificada com sucesso!
+
+Detalhes Anteriores:
+- Data: ${new Date(dataHoraAnterior).toLocaleDateString('pt-BR')}
+- Horário: ${new Date(dataHoraAnterior).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+
+Novos Detalhes:
+- Médico: ${medico}
+- Especialidade: ${especialidade}
+- Data: ${novaData}
+- Horário: ${novoHorario}
+
+${nomeClinica || 'MediCenter'} - Sistema Inteligente de Triagem
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log('✅ Email de modificação enviado com sucesso!');
+
+    res.json({
+      success: true,
+      message: 'Email de modificação enviado com sucesso',
+      messageId: info.messageId,
+      recipient: paciente.email
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao enviar email de modificação:', error);
+    
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao enviar email de modificação',
+      error: error.message
+    });
+  }
+});
+
 // Rota de teste
 app.get('/api/test', (req, res) => {
   res.json({ 

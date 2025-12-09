@@ -11,7 +11,7 @@ import Consultas from './components/scheduling/Consultas'
 import Prontuario from './components/medical/Prontuario'
 import Auth from './components/auth/Auth'
 import { salvarConfiguracaoLembrete, agendarLembretes, deveEnviarLembrete, obterConfiguracaoLembrete } from './services/reminderService'
-import { sendReminderEmail } from './services/emailService'
+import { sendReminderEmail, sendCancellationEmail, sendModificationEmail } from './services/emailService'
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false)
@@ -133,6 +133,10 @@ export default function App() {
 
   const handleAuthSuccess = (userData) => {
     setUser(userData)
+    // Salvar email do usuário para envio de emails
+    if (userData && userData.email) {
+      localStorage.setItem('userEmail', userData.email)
+    }
   }
 
   const handleLogout = () => {
@@ -158,7 +162,8 @@ export default function App() {
       ...novaConsulta,
       id: novaConsulta.id || `consulta_${Date.now()}`,
       status: 'agendada',
-      paciente: user
+      paciente: user,
+      pacienteEmail: user?.email || localStorage.getItem('userEmail') || ''
     };
 
     // Atualiza o estado (que automaticamente salva no localStorage via useEffect)
@@ -285,11 +290,38 @@ export default function App() {
   }, [])
 
   const handleEditarConsulta = (consultaId, dadosAtualizados) => {
+    const consultaAnterior = consultas.find(c => c.id === consultaId)
+    
     setConsultas(consultas.map(consulta => 
       consulta.id === consultaId 
         ? { ...consulta, ...dadosAtualizados }
         : consulta
     ))
+    
+    // Se a data/hora foi modificada, envia email
+    if (dadosAtualizados.dataHora && consultaAnterior.dataHora !== dadosAtualizados.dataHora) {
+      const novaData = new Date(dadosAtualizados.dataHora).toLocaleDateString('pt-BR', { 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+      })
+      const novoHorario = new Date(dadosAtualizados.dataHora).toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
+      
+      sendModificationEmail(
+        { ...consultaAnterior, ...dadosAtualizados },
+        consultaAnterior.dataHora,
+        novaData,
+        novoHorario,
+        (resultado) => {
+          setNotificacaoLembrete(resultado)
+          setTimeout(() => setNotificacaoLembrete(null), 6000)
+        }
+      )
+    }
     
     // Mostrar toast
     setToastMessage({
@@ -305,11 +337,24 @@ export default function App() {
   }
 
   const handleExcluirConsulta = (consultaId) => {
+    const consultaParaCancelar = consultas.find(c => c.id === consultaId)
+    
     setConsultas(consultas.map(consulta => 
       consulta.id === consultaId 
         ? { ...consulta, status: 'cancelada' }
         : consulta
     ))
+    
+    // Envia email de cancelamento
+    if (consultaParaCancelar) {
+      sendCancellationEmail(
+        consultaParaCancelar,
+        (resultado) => {
+          setNotificacaoLembrete(resultado)
+          setTimeout(() => setNotificacaoLembrete(null), 6000)
+        }
+      )
+    }
     
     // Mostrar toast
     setToastMessage({

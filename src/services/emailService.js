@@ -621,3 +621,216 @@ export function iniciarSistemaLembretes() {
     });
   }, 60000); // Verifica a cada 1 minuto
 }
+
+/**
+ * Envia email de cancelamento de consulta
+ */
+export async function sendCancellationEmail(consulta, onEmailEnviado) {
+  try {
+    console.log('📧 Preparando envio de email de cancelamento...');
+    
+    const paciente = {
+      name: consulta.paciente || 'Paciente',
+      email: consulta.pacienteEmail || localStorage.getItem('userEmail') || ''
+    };
+
+    if (!paciente.email) {
+      throw new Error('Email do paciente não encontrado');
+    }
+
+    console.log('📧 Destinatário:', paciente.email);
+
+    const payload = {
+      paciente,
+      medico: consulta.medico,
+      especialidade: consulta.especialidade,
+      dataHora: consulta.dataHora,
+      motivo: consulta.motivoCancelamento || 'Cancelado pelo paciente',
+      nomeClinica: localStorage.getItem('clinicName') || 'MediCenter'
+    };
+
+    console.log('📤 Enviando requisição para /api/send-cancellation...');
+
+    const response = await fetch('http://localhost:3001/api/send-cancellation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    console.log('📥 Status da resposta:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('📝 Texto da resposta de erro:', errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    const responseText = await response.text();
+    console.log('📝 Texto bruto da resposta:', responseText);
+
+    if (!responseText.trim()) {
+      throw new Error('Resposta vazia do servidor');
+    }
+
+    const result = JSON.parse(responseText.trim());
+
+    if (!result.success) {
+      throw new Error(result.message || 'Erro ao enviar email de cancelamento');
+    }
+
+    console.log('✅ Email de cancelamento enviado com sucesso!');
+    console.log('📧 ID da mensagem:', result.messageId);
+
+    // Notifica o usuário do sucesso
+    if (onEmailEnviado) {
+      onEmailEnviado({
+        consultaInfo: {
+          medico: consulta.medico,
+          especialidade: consulta.especialidade,
+          dataHora: consulta.dataHora
+        },
+        tipo: 'success',
+        mensagem: `Email de cancelamento enviado para ${paciente.email}`
+      });
+    }
+
+    return {
+      success: true,
+      messageId: result.messageId,
+      recipient: paciente.email,
+      timestamp: new Date().toISOString()
+    };
+
+  } catch (error) {
+    console.error('❌ Erro ao enviar email de cancelamento:', error.message);
+    console.error('❌ Stack:', error.stack);
+
+    // Notifica o usuário do erro
+    if (onEmailEnviado) {
+      onEmailEnviado({
+        consultaInfo: {
+          medico: consulta.medico,
+          especialidade: consulta.especialidade,
+          dataHora: consulta.dataHora
+        },
+        tipo: 'error',
+        mensagem: 'Erro ao enviar email de cancelamento: ' + error.message
+      });
+    }
+
+    return {
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    };
+  }
+}
+
+/**
+ * Envia email de modificação de consulta
+ */
+export async function sendModificationEmail(consulta, dataHoraAnterior, novaData, novoHorario, onEmailEnviado) {
+  try {
+    console.log('📧 Preparando envio de email de modificação...');
+
+    const paciente = {
+      name: consulta.paciente || 'Paciente',
+      email: consulta.pacienteEmail || localStorage.getItem('userEmail') || ''
+    };
+
+    if (!paciente.email) {
+      throw new Error('Email do paciente não encontrado');
+    }
+
+    console.log('📧 Destinatário:', paciente.email);
+
+    const payload = {
+      paciente,
+      medico: consulta.medico,
+      especialidade: consulta.especialidade,
+      dataHoraAnterior,
+      novaData,
+      novoHorario,
+      nomeClinica: localStorage.getItem('clinicName') || 'MediCenter'
+    };
+
+    console.log('📤 Enviando requisição para /api/send-modification...');
+
+    const response = await fetch('http://localhost:3001/api/send-modification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    console.log('📥 Status da resposta:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('📝 Texto da resposta de erro:', errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    const responseText = await response.text();
+    console.log('📝 Texto bruto da resposta:', responseText);
+
+    if (!responseText.trim()) {
+      throw new Error('Resposta vazia do servidor');
+    }
+
+    const result = JSON.parse(responseText.trim());
+
+    if (!result.success) {
+      throw new Error(result.message || 'Erro ao enviar email de modificação');
+    }
+
+    console.log('✅ Email de modificação enviado com sucesso!');
+    console.log('📧 ID da mensagem:', result.messageId);
+
+    // Notifica o usuário do sucesso
+    if (onEmailEnviado) {
+      onEmailEnviado({
+        consultaInfo: {
+          medico: consulta.medico,
+          especialidade: consulta.especialidade,
+          dataHora: consulta.dataHora
+        },
+        tipo: 'success',
+        mensagem: `Email de modificação enviado para ${paciente.email}`
+      });
+    }
+
+    return {
+      success: true,
+      messageId: result.messageId,
+      recipient: paciente.email,
+      timestamp: new Date().toISOString()
+    };
+
+  } catch (error) {
+    console.error('❌ Erro ao enviar email de modificação:', error.message);
+    console.error('❌ Stack:', error.stack);
+
+    // Notifica o usuário do erro
+    if (onEmailEnviado) {
+      onEmailEnviado({
+        consultaInfo: {
+          medico: consulta.medico,
+          especialidade: consulta.especialidade,
+          dataHora: consulta.dataHora
+        },
+        tipo: 'error',
+        mensagem: 'Erro ao enviar email de modificação: ' + error.message
+      });
+    }
+
+    return {
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    };
+  }
+}
