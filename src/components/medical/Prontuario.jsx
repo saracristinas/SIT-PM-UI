@@ -5,7 +5,7 @@ export default function Prontuario({ darkMode }) {
   const [searchQuery, setSearchQuery] = useState('')
 
   const stats = [
-    { label: 'Total', value: 0, color: 'emerald' },
+    { label: 'Total', value: 0, color: 'blue' },
     { label: 'Consultas', value: 0, color: 'blue' },
     { label: 'Exames', value: 0, color: 'purple' },
     { label: 'Receitas', value: 0, color: 'cyan' }
@@ -16,7 +16,7 @@ export default function Prontuario({ darkMode }) {
       {/* Header */}
       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6 mb-8`}>
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl flex items-center justify-center">
             <FileText className="w-8 h-8 text-white" />
           </div>
           <div>
@@ -35,7 +35,7 @@ export default function Prontuario({ darkMode }) {
         {stats.map((stat, index) => {
           const getTextColor = (color) => {
             const colors = {
-              emerald: 'text-emerald-600',
+              emerald: 'text-blue-600',
               blue: 'text-blue-600',
               purple: 'text-purple-600',
               cyan: 'text-cyan-600'
@@ -45,7 +45,7 @@ export default function Prontuario({ darkMode }) {
 
           const getBgColor = (color) => {
             const colors = {
-              emerald: 'bg-emerald-50',
+              emerald: 'bg-blue-50',
               blue: 'bg-blue-50',
               purple: 'bg-purple-50',
               cyan: 'bg-cyan-50'
@@ -82,7 +82,7 @@ export default function Prontuario({ darkMode }) {
               darkMode
                 ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
                 : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-            } focus:outline-none focus:ring-2 focus:ring-emerald-500`}
+            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
           />
         </div>
       </div>
@@ -90,7 +90,7 @@ export default function Prontuario({ darkMode }) {
       {/* Registros Médicos */}
       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md overflow-hidden`}>
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className={`font-semibold flex items-center gap-2 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+          <h3 className={`font-semibold flex items-center gap-2 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
             <FileText className="w-5 h-5" />
             Registros Médicos (0)
           </h3>
@@ -99,8 +99,8 @@ export default function Prontuario({ darkMode }) {
         {/* Estado Vazio */}
         <div className="p-12">
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-24 h-24 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
-              <FileText className="w-12 h-12 text-emerald-600" />
+            <div className="w-24 h-24 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
+              <FileText className="w-12 h-12 text-blue-600" />
             </div>
             <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               Nenhum registro encontrado

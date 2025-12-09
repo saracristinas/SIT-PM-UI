@@ -43,9 +43,9 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
       label: 'Concluídas', 
       value: consultasConcluidas.length, 
       icon: CheckCircle, 
-      color: 'emerald',
-      gradient: 'from-emerald-500 to-emerald-600',
-      bgLight: 'bg-emerald-50',
+      color: 'blue',
+      gradient: 'from-blue-400 to-cyan-500',
+      bgLight: 'bg-blue-50',
       textColor: 'text-[#059669]'
     },
     { 
@@ -92,13 +92,13 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
           
           <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-500 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-500 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
                 <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
                   Minhas Consultas
-                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 animate-pulse" />
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 animate-pulse" />
                 </h1>
                 <p className="text-gray-600 text-xs sm:text-sm mt-0.5">
                   Gerencie seus agendamentos
@@ -108,7 +108,7 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
             
             <button
               onClick={() => onNavigate('agendar')}
-              className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-emerald-500 text-white rounded-lg sm:rounded-xl text-sm font-semibold hover:bg-emerald-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-4 py-2 sm:px-5 sm:py-2.5 bg-blue-500 text-white rounded-lg sm:rounded-xl text-sm font-semibold hover:bg-blue-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
               <Plus className="w-4 h-4" />
               Nova Consulta
@@ -158,8 +158,8 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                 className={`w-full pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg sm:rounded-xl border ${
                   darkMode
                     ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500'
-                    : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-emerald-500'
-                } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition`}
+                    : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                } focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition`}
               />
             </div>
 
@@ -198,8 +198,8 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                       className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition ${
                         filterStatus === 'todas'
                           ? darkMode
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-emerald-50 text-emerald-700'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-blue-50 text-blue-700'
                           : darkMode
                           ? 'text-white hover:bg-gray-600'
                           : 'text-gray-700 hover:bg-gray-50'
@@ -217,8 +217,8 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                       className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition ${
                         filterStatus === 'agendada'
                           ? darkMode
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-emerald-50 text-emerald-700'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-blue-50 text-blue-700'
                           : darkMode
                           ? 'text-white hover:bg-gray-600'
                           : 'text-gray-700 hover:bg-gray-50'
@@ -236,8 +236,8 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                       className={`w-full px-4 py-2.5 text-left text-sm flex items-center justify-between transition ${
                         filterStatus === 'concluida'
                           ? darkMode
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-emerald-50 text-emerald-700'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-blue-50 text-blue-700'
                           : darkMode
                           ? 'text-white hover:bg-gray-600'
                           : 'text-gray-700 hover:bg-gray-50'
@@ -291,17 +291,13 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
             {consultasFiltradas.map((consulta) => (
               <div
                 key={consulta.id}
-                className={`group relative ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg hover:shadow-xl sm:hover:shadow-2xl transition-all duration-300 overflow-hidden border ${
-                  consulta.status === 'agendada' 
-                    ? 'border-blue-200' 
-                    : 'border-emerald-200'
-                }`}
+                className={`group relative ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg hover:shadow-xl sm:hover:shadow-2xl transition-all duration-300 overflow-hidden border border-blue-200`}
               >
                 {/* Status Badge */}
                 <div className={`absolute top-2 right-2 sm:top-3 sm:right-3 px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
                   consulta.status === 'agendada'
                     ? 'bg-blue-100 text-blue-700'
-                    : 'bg-emerald-100 text-emerald-700'
+                    : 'bg-blue-100 text-blue-700'
                 }`}>
                   {consulta.status === 'agendada' ? '📅 Agendada' : '✅ Concluída'}
                 </div>

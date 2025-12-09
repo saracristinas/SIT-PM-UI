@@ -28,7 +28,7 @@ export default function EmailPreview({ userData, consultaData, darkMode = false 
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           
           {/* Header */}
-          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-10 text-center relative overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-400 to-cyan-500 p-10 text-center relative overflow-hidden">
             <div className="absolute inset-0 opacity-20">
               <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
             </div>
@@ -40,7 +40,7 @@ export default function EmailPreview({ userData, consultaData, darkMode = false 
                 </svg>
               </div>
               <h1 className="text-3xl font-bold text-white mb-2">Consulta Confirmada!</h1>
-              <p className="text-emerald-100 text-lg">SITPM - Sistema Inteligente de Triagem</p>
+              <p className="text-blue-100 text-lg">SITPM - Sistema Inteligente de Triagem</p>
             </div>
           </div>
 
@@ -57,10 +57,10 @@ export default function EmailPreview({ userData, consultaData, darkMode = false 
             </div>
 
             {/* Consulta Card */}
-            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-500 rounded-2xl p-6 mb-6">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-500 rounded-2xl p-6 mb-6">
               <div className="flex items-center gap-2 mb-4">
-                <Calendar className="w-5 h-5 text-emerald-600" />
-                <h3 className="font-bold text-emerald-900 text-sm uppercase tracking-wide">
+                <Calendar className="w-5 h-5 text-blue-600" />
+                <h3 className="font-bold text-blue-900 text-sm uppercase tracking-wide">
                   Detalhes da Consulta
                 </h3>
               </div>
@@ -69,10 +69,10 @@ export default function EmailPreview({ userData, consultaData, darkMode = false 
                 {/* Especialidade */}
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <User className="w-6 h-6 text-emerald-600" />
+                    <User className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-emerald-700 uppercase">Especialidade</p>
+                    <p className="text-xs font-semibold text-blue-700 uppercase">Especialidade</p>
                     <p className="text-lg font-bold text-gray-900">{especialidade}</p>
                   </div>
                 </div>
@@ -80,14 +80,14 @@ export default function EmailPreview({ userData, consultaData, darkMode = false 
                 {/* Médico */}
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2">
                       <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                       <circle cx="8.5" cy="7" r="4"/>
                       <polyline points="17 11 19 13 23 9"/>
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-emerald-700 uppercase">Médico(a)</p>
+                    <p className="text-xs font-semibold text-blue-700 uppercase">Médico(a)</p>
                     <p className="text-lg font-bold text-gray-900">{medico}</p>
                   </div>
                 </div>
@@ -95,10 +95,10 @@ export default function EmailPreview({ userData, consultaData, darkMode = false 
                 {/* Data */}
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <Calendar className="w-6 h-6 text-emerald-600" />
+                    <Calendar className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-emerald-700 uppercase">Data</p>
+                    <p className="text-xs font-semibold text-blue-700 uppercase">Data</p>
                     <p className="text-lg font-bold text-gray-900 capitalize">{dataFormatada}</p>
                   </div>
                 </div>
@@ -106,10 +106,10 @@ export default function EmailPreview({ userData, consultaData, darkMode = false 
                 {/* Horário */}
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <Clock className="w-6 h-6 text-emerald-600" />
+                    <Clock className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-emerald-700 uppercase">Horário</p>
+                    <p className="text-xs font-semibold text-blue-700 uppercase">Horário</p>
                     <p className="text-lg font-bold text-gray-900">{hora}</p>
                   </div>
                 </div>
@@ -132,7 +132,7 @@ export default function EmailPreview({ userData, consultaData, darkMode = false 
 
             {/* CTA Button */}
             <div className="text-center mb-6">
-              <button className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all">
+              <button className="bg-gradient-to-r from-blue-400 to-cyan-500 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all">
                 Visualizar no Sistema
               </button>
             </div>
@@ -158,9 +158,9 @@ export default function EmailPreview({ userData, consultaData, darkMode = false 
             </p>
             
             <div className="flex items-center justify-center gap-4 mb-4">
-              <a href="#" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">Instagram</a>
-              <a href="#" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">Facebook</a>
-              <a href="#" className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">LinkedIn</a>
+              <a href="#" className="text-blue-600 hover:text-blue-700 text-sm font-medium">Instagram</a>
+              <a href="#" className="text-blue-600 hover:text-blue-700 text-sm font-medium">Facebook</a>
+              <a href="#" className="text-blue-600 hover:text-blue-700 text-sm font-medium">LinkedIn</a>
             </div>
             
             <p className="text-xs text-gray-500">

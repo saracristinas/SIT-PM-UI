@@ -170,14 +170,14 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-emerald-50 via-white to-teal-50'} py-4 sm:py-8 px-4 sm:px-6 lg:px-8`}>
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-white to-cyan-50'} py-4 sm:py-8 px-4 sm:px-6 lg:px-8`}>
       <div className="max-w-5xl mx-auto">
         {/* Header com Gradiente Animado */}
-        <div className="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 p-8 shadow-2xl">
+        <div className="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-600 p-8 shadow-2xl">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="absolute inset-0 opacity-30">
             <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-300 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-300 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
           </div>
           
           <div className="relative">
@@ -190,7 +190,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                 <Sparkles className="w-6 h-6 animate-pulse" />
               </h1>
             </div>
-            <p className="text-emerald-50 text-sm sm:text-base ml-0 sm:ml-16">
+            <p className="text-blue-50 text-sm sm:text-base ml-0 sm:ml-16">
               Preencha os dados para marcar seu atendimento de forma rápida e segura
             </p>
           </div>
@@ -205,7 +205,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                   <div
                     className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center font-bold text-lg transition-all ${
                       currentStep >= step.number
-                        ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30'
+                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
                         : darkMode
                         ? 'bg-gray-700 text-gray-400'
                         : 'bg-gray-200 text-gray-500'
@@ -219,7 +219,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                   </div>
                   <p className={`mt-2 text-xs sm:text-sm font-medium text-center ${
                     currentStep >= step.number
-                      ? darkMode ? 'text-emerald-400' : 'text-emerald-600'
+                      ? darkMode ? 'text-blue-400' : 'text-blue-600'
                       : darkMode ? 'text-gray-500' : 'text-gray-500'
                   }`}>
                     {step.title}
@@ -228,7 +228,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                 {index < steps.length - 1 && (
                   <div className={`flex-1 h-1 mx-2 rounded-full transition-all ${
                     currentStep > step.number
-                      ? 'bg-gradient-to-r from-emerald-500 to-emerald-600'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600'
                       : darkMode ? 'bg-gray-700' : 'bg-gray-200'
                   }`} />
                 )}
@@ -257,7 +257,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                       onClick={() => setFormData({ ...formData, type: 'presencial' })}
                       className={`group relative p-6 rounded-2xl border-2 transition-all ${
                         formData.type === 'presencial'
-                          ? 'border-emerald-500 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-lg shadow-emerald-500/20'
+                          ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg shadow-blue-500/20'
                           : darkMode
                           ? 'border-gray-600 bg-gray-700 hover:border-gray-500 hover:shadow-lg'
                           : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:shadow-lg'
@@ -265,20 +265,20 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                     >
                       <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center transition-all ${
                         formData.type === 'presencial'
-                          ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
+                          ? 'bg-blue-500 shadow-lg shadow-blue-500/30'
                           : darkMode ? 'bg-gray-600' : 'bg-gray-200'
                       }`}>
                         <Building2 className={`w-8 h-8 ${formData.type === 'presencial' ? 'text-white' : darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
                       </div>
-                      <p className={`font-bold text-lg mb-2 ${formData.type === 'presencial' ? 'text-emerald-900' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <p className={`font-bold text-lg mb-2 ${formData.type === 'presencial' ? 'text-blue-900' : darkMode ? 'text-white' : 'text-gray-900'}`}>
                         Presencial
                       </p>
-                      <p className={`text-sm ${formData.type === 'presencial' ? 'text-emerald-700' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      <p className={`text-sm ${formData.type === 'presencial' ? 'text-blue-700' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         Atendimento na clínica
                       </p>
                       {formData.type === 'presencial' && (
                         <div className="absolute top-3 right-3">
-                          <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                          <CheckCircle2 className="w-6 h-6 text-blue-600" />
                         </div>
                       )}
                     </button>
@@ -287,7 +287,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                       onClick={() => setFormData({ ...formData, type: 'online' })}
                       className={`group relative p-6 rounded-2xl border-2 transition-all ${
                         formData.type === 'online'
-                          ? 'border-emerald-500 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-lg shadow-emerald-500/20'
+                          ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg shadow-blue-500/20'
                           : darkMode
                           ? 'border-gray-600 bg-gray-700 hover:border-gray-500 hover:shadow-lg'
                           : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:shadow-lg'
@@ -295,20 +295,20 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                     >
                       <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center transition-all ${
                         formData.type === 'online'
-                          ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
+                          ? 'bg-blue-500 shadow-lg shadow-blue-500/30'
                           : darkMode ? 'bg-gray-600' : 'bg-gray-200'
                       }`}>
                         <Video className={`w-8 h-8 ${formData.type === 'online' ? 'text-white' : darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
                       </div>
-                      <p className={`font-bold text-lg mb-2 ${formData.type === 'online' ? 'text-emerald-900' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      <p className={`font-bold text-lg mb-2 ${formData.type === 'online' ? 'text-blue-900' : darkMode ? 'text-white' : 'text-gray-900'}`}>
                         Online
                       </p>
-                      <p className={`text-sm ${formData.type === 'online' ? 'text-emerald-700' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      <p className={`text-sm ${formData.type === 'online' ? 'text-blue-700' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         Teleconsulta por vídeo
                       </p>
                       {formData.type === 'online' && (
                         <div className="absolute top-3 right-3">
-                          <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                          <CheckCircle2 className="w-6 h-6 text-blue-600" />
                         </div>
                       )}
                     </button>
@@ -318,7 +318,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                 {/* Data e Horário */}
                 <div>
                   <label className={`block text-sm font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'} flex items-center gap-2`}>
-                    <Clock className="w-5 h-5 text-emerald-600" />
+                    <Clock className="w-5 h-5 text-blue-600" />
                     Data e Horário <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -328,9 +328,9 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                     min={new Date().toISOString().slice(0, 16)}
                     className={`w-full px-4 py-4 rounded-xl border-2 text-sm sm:text-base ${
                       darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500'
-                        : 'bg-white border-gray-200 text-gray-900 focus:border-emerald-500'
-                    } focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition`}
+                        ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500'
+                        : 'bg-white border-gray-200 text-gray-900 focus:border-blue-500'
+                    } focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition`}
                     aria-label="Selecione data e horário"
                   />
                   <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -355,22 +355,22 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                     onClick={() => setFormData({ ...formData, especialidade: esp.id })}
                     className={`relative p-5 rounded-2xl border-2 transition-all text-left ${
                       formData.especialidade === esp.id
-                        ? 'border-emerald-500 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-lg shadow-emerald-500/20'
+                        ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg shadow-blue-500/20'
                         : darkMode
                         ? 'border-gray-600 bg-gray-700 hover:border-gray-500 hover:shadow-lg'
                         : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:shadow-lg'
                     }`}
                   >
                     <div className="text-3xl mb-3">{esp.icon}</div>
-                    <p className={`font-bold text-base mb-1 ${formData.especialidade === esp.id ? 'text-emerald-900' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <p className={`font-bold text-base mb-1 ${formData.especialidade === esp.id ? 'text-blue-900' : darkMode ? 'text-white' : 'text-gray-900'}`}>
                       {esp.name}
                     </p>
-                    <p className={`text-sm ${formData.especialidade === esp.id ? 'text-emerald-700' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p className={`text-sm ${formData.especialidade === esp.id ? 'text-blue-700' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {esp.desc}
                     </p>
                     {formData.especialidade === esp.id && (
                       <div className="absolute top-3 right-3">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                        <CheckCircle2 className="w-5 h-5 text-blue-600" />
                       </div>
                     )}
                   </button>
@@ -389,7 +389,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
               {/* Médico */}
               <div className="relative">
                 <label className={`block text-sm font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'} flex items-center gap-2`}>
-                  <Stethoscope className="w-5 h-5 text-emerald-600" />
+                  <Stethoscope className="w-5 h-5 text-blue-600" />
                   Médico (Opcional)
                 </label>
                 
@@ -400,9 +400,9 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                     onClick={() => setShowMedicoDropdown(!showMedicoDropdown)}
                     className={`w-full px-4 py-3.5 rounded-xl border-2 text-left text-sm sm:text-base flex items-center justify-between ${
                       darkMode
-                        ? 'bg-gray-700 border-gray-600 text-white focus:border-emerald-500'
-                        : 'bg-white border-gray-200 text-gray-900 focus:border-emerald-500'
-                    } focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition hover:border-emerald-400`}
+                        ? 'bg-gray-700 border-gray-600 text-white focus:border-blue-500'
+                        : 'bg-white border-gray-200 text-gray-900 focus:border-blue-500'
+                    } focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition hover:border-blue-400`}
                   >
                     <span className={!formData.medico ? (darkMode ? 'text-gray-400' : 'text-gray-500') : ''}>
                       {formData.medico 
@@ -431,14 +431,14 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                             setFormData({ ...formData, medico: '' });
                             setShowMedicoDropdown(false);
                           }}
-                          className={`w-full px-4 py-3 text-left text-sm sm:text-base hover:bg-emerald-50 transition flex items-center justify-between ${
-                            darkMode ? 'hover:bg-gray-600' : 'hover:bg-emerald-50'
-                          } ${!formData.medico ? 'bg-emerald-50' : ''}`}
+                          className={`w-full px-4 py-3 text-left text-sm sm:text-base hover:bg-blue-50 transition flex items-center justify-between ${
+                            darkMode ? 'hover:bg-gray-600' : 'hover:bg-blue-50'
+                          } ${!formData.medico ? 'bg-blue-50' : ''}`}
                         >
                           <span className={darkMode ? 'text-white' : 'text-gray-900'}>
                             Atribuir automaticamente
                           </span>
-                          {!formData.medico && <Check className="w-5 h-5 text-emerald-600" />}
+                          {!formData.medico && <Check className="w-5 h-5 text-blue-600" />}
                         </button>
                         
                         {medicos[formData.especialidade]?.map((med) => (
@@ -449,11 +449,11 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                               setFormData({ ...formData, medico: med.id });
                               setShowMedicoDropdown(false);
                             }}
-                            className={`w-full px-4 py-3 text-left text-sm sm:text-base hover:bg-emerald-50 transition flex items-center justify-between border-t ${
-                              darkMode 
-                                ? 'hover:bg-gray-600 border-gray-600' 
-                                : 'hover:bg-emerald-50 border-gray-100'
-                            } ${formData.medico === med.id ? 'bg-emerald-50' : ''}`}
+                            className={`w-full px-4 py-3 text-left text-sm sm:text-base hover:bg-blue-50 transition flex items-center justify-between border-t ${
+                              darkMode
+                                ? 'hover:bg-gray-600 border-gray-700'
+                                : 'hover:bg-blue-50 border-gray-100'
+                            } ${formData.medico === med.id ? 'bg-blue-50' : ''}`}
                           >
                             <div>
                               <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -463,7 +463,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                                 {med.crm} • {med.consultas} consultas
                               </p>
                             </div>
-                            {formData.medico === med.id && <Check className="w-5 h-5 text-emerald-600" />}
+                            {formData.medico === med.id && <Check className="w-5 h-5 text-blue-600" />}
                           </button>
                         ))}
                       </div>
@@ -488,9 +488,9 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                   rows={5}
                   className={`w-full px-4 py-4 rounded-xl border-2 text-sm sm:text-base ${
                     darkMode
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-500'
-                      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500 focus:border-emerald-500'
-                  } focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition resize-none`}
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500'
+                      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                  } focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition resize-none`}
                   aria-label="Descreva o motivo da consulta"
                 />
                 <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -526,7 +526,7 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
             {currentStep < 3 ? (
               <button
                 onClick={handleNext}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-semibold transition-all shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:scale-[1.02] flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold transition-all shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-[1.02] flex items-center justify-center gap-2"
               >
                 Próximo
                 <ChevronRight className="w-5 h-5" />
@@ -537,8 +537,8 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
                 disabled={isLoading}
                 className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all shadow-lg flex items-center justify-center gap-2 ${
                   isLoading
-                    ? 'bg-emerald-300 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:scale-[1.02]'
+                    ? 'bg-blue-300 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-[1.02]'
                 }`}
               >
                 {isLoading ? (
@@ -565,8 +565,8 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
             </h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                  {formData.type === 'presencial' ? <Building2 className="w-5 h-5 text-emerald-600" /> : <Video className="w-5 h-5 text-emerald-600" />}
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  {formData.type === 'presencial' ? <Building2 className="w-5 h-5 text-blue-600" /> : <Video className="w-5 h-5 text-blue-600" />}
                 </div>
                 <div>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Tipo</p>

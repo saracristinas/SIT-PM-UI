@@ -20,10 +20,10 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
       sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
     }`}>
       {/* Logo */}
-      <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 p-6">
+      <div className="bg-gradient-to-r from-blue-400 to-cyan-400 p-6">
         <div className="flex items-center gap-3">
           <div className="relative w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl">
-            <HeartPulse className="w-8 h-8 text-emerald-600" strokeWidth={2} />
+            <HeartPulse className="w-8 h-8 text-blue-600" strokeWidth={2} />
           </div>
           <div className="text-white">
             <div className="font-bold text-xl">SITPM</div>
@@ -34,7 +34,7 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
 
       {/* Menu */}
       <div className="flex-1 px-6 py-6">
-        <div className="text-xs font-bold mb-4 text-emerald-600 tracking-wide">
+        <div className="text-xs font-bold mb-4 text-blue-600 tracking-wide">
           MENU PRINCIPAL
         </div>
         
@@ -49,7 +49,7 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
                 onClick={() => handleMenuClick(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all ${
                   isActive
-                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-md'
+                    ? 'bg-gradient-to-r from-blue-400 to-cyan-400 text-white shadow-md'
                     : darkMode
                     ? 'text-gray-300 hover:bg-gray-700'
                     : 'text-gray-700 hover:bg-gray-50'
@@ -64,14 +64,14 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
       </div>
 
       {/* Bottom Section */}
-      <div className={`px-6 pb-6 pt-6 space-y-3 border-t ${darkMode ? 'border-gray-700' : 'border-emerald-200'}`}>
+      <div className={`px-6 pb-6 pt-6 space-y-3 border-t ${darkMode ? 'border-gray-700' : 'border-blue-200'}`}>
         {/* Modo Escuro - Apenas Desktop */}
         <button 
           onClick={() => setDarkMode(!darkMode)}
           className={`hidden lg:flex w-full items-center justify-center gap-2 px-4 py-3 border-2 ${
             darkMode 
               ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
-              : 'border-emerald-500 text-emerald-700 hover:bg-emerald-50'
+              : 'border-blue-500 text-blue-700 hover:bg-blue-50'
           } rounded-lg transition-all font-medium`}
         >
           <Moon className="w-4 h-4" />
@@ -92,7 +92,7 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
                 className="w-11 h-11 rounded-xl object-cover"
               />
             ) : (
-              <div className="w-11 h-11 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
+              <div className="w-11 h-11 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
                 {user?.name?.charAt(0).toUpperCase() || <User className="w-6 h-6" />}
               </div>
             )}
@@ -100,7 +100,7 @@ export default function Sidebar({ darkMode, setDarkMode, currentPage, setCurrent
               <div className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-gray-900'} truncate`}>
                 {user?.name || 'Usuário'}
               </div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-emerald-600'} truncate`}>
+              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-blue-600'} truncate`}>
                 {user?.email || 'Paciente'}
               </div>
             </div>

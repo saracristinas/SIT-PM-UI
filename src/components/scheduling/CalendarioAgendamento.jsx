@@ -125,7 +125,7 @@ export default function CalendarioAgendamento({ darkMode = false, onAgendarConsu
     return (
       <div className={`rounded-xl p-3 sm:p-4 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} shadow-lg max-w-md mx-auto`}>
         <div className="text-center">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full flex items-center justify-center">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full flex items-center justify-center">
             <Check className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
           <h3 className={`text-base sm:text-lg font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -147,8 +147,8 @@ export default function CalendarioAgendamento({ darkMode = false, onAgendarConsu
             </p>
           </div>
 
-          <div className={`mt-2 p-2 rounded-lg ${darkMode ? 'bg-emerald-900/30 border border-emerald-800' : 'bg-emerald-50 border border-emerald-200'}`}>
-            <p className={`text-xs ${darkMode ? 'text-emerald-300' : 'text-emerald-900'}`}>
+          <div className={`mt-2 p-2 rounded-lg ${darkMode ? 'bg-blue-900/30 border border-blue-800' : 'bg-blue-50 border border-blue-200'}`}>
+            <p className={`text-xs ${darkMode ? 'text-blue-300' : 'text-blue-900'}`}>
               ℹ️ Para mais informações, <strong>abra a aba "Consultas"</strong>.
             </p>
           </div>

@@ -40,7 +40,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
       {/* Header */}
       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-4 sm:p-6 mb-6 sm:mb-8`}>
         <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center">
+            <div className="w-16 h-16 rounded-xl flex items-center justify-center" style={{ backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' }}>
               <HeartPulse className="w-8 h-8 text-white" strokeWidth={2} />
             </div>
             <div>
@@ -61,8 +61,8 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
             onClick={() => onNavigate('triagem')}
             className={`${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-lg'} rounded-xl shadow-md p-6 transition cursor-pointer`}
           >
-            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
-              <Clock className="w-6 h-6 text-emerald-600" />
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+              <Clock className="w-6 h-6 text-blue-600" />
             </div>
             <h3 className={`font-bold text-lg mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Triagem com IA</h3>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Avaliação inteligente 24/7</p>
@@ -83,8 +83,8 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
             onClick={() => onNavigate('consultas')}
             className={`${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-lg'} rounded-xl shadow-md p-6 transition cursor-pointer`}
           >
-            <div className="w-12 h-12 bg-lime-100 rounded-xl flex items-center justify-center mb-4">
-              <Calendar className="w-6 h-6 text-lime-600" />
+            <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center mb-4">
+              <Calendar className="w-6 h-6 text-cyan-600" />
             </div>
             <h3 className={`font-bold text-lg mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Minhas Consultas</h3>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -96,8 +96,8 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
             onClick={() => onNavigate('prontuario')}
             className={`${darkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-lg'} rounded-xl shadow-md p-6 transition cursor-pointer`}
           >
-            <div className="w-12 h-12 bg-lime-100 rounded-xl flex items-center justify-center mb-4">
-              <FileText className="w-6 h-6 text-lime-600" />
+            <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center mb-4">
+              <FileText className="w-6 h-6 text-cyan-600" />
             </div>
             <h3 className={`font-bold text-lg mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Meu Prontuário</h3>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>0 registro(s)</p>
@@ -108,13 +108,13 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
         {proximaConsulta && (
           <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6 mb-8`}>
             <div className="flex items-center gap-3 mb-4">
-              <Calendar className={`w-5 h-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+              <Calendar className={`w-5 h-5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
               <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 Próxima Consulta Agendada
               </h3>
             </div>
             
-            <div className={`${darkMode ? 'bg-emerald-900/20 border-emerald-700' : 'bg-emerald-50 border-emerald-200'} border-2 rounded-xl p-6`}>
+            <div className={`${darkMode ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'} border-2 rounded-xl p-6`}>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
@@ -143,7 +143,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                   <div className="mt-4">
                     <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
                       proximaConsulta.tipo === 'presencial'
-                        ? 'bg-emerald-500 text-white'
+                        ? 'bg-blue-500 text-white'
                         : 'bg-purple-500 text-white'
                     }`}>
                       {proximaConsulta.tipo === 'presencial' ? '🏥 Consulta Presencial' : '💻 Teleconsulta'}
@@ -153,7 +153,8 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                 
                 <button
                   onClick={() => onNavigate('consultas')}
-                  className="px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition flex items-center gap-2"
+                  className="px-4 py-2 text-white rounded-lg font-medium transition flex items-center gap-2"
+                  style={{ backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' }}
                 >
                   Ver Detalhes
                   <ArrowRight className="w-4 h-4" />
@@ -169,7 +170,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
           <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6`}>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <Calendar className={`w-5 h-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                <Calendar className={`w-5 h-5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                 <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>Histórico de Consultas</h3>
               </div>
               <button 
@@ -180,7 +181,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                     setShowHistoricoModal(true);
                   }
                 }}
-                className="text-emerald-600 text-sm font-medium hover:underline"
+                className="text-blue-600 text-sm font-medium hover:underline"
               >
                 {consultasAtivas.length === 0 ? 'Agendar primeira' : 'Ver todas'}
               </button>
@@ -191,8 +192,8 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                 onClick={() => setShowSugestaoTriagemModal(true)}
                 className="flex flex-col items-center justify-center py-12 cursor-pointer hover:opacity-80 transition"
               >
-                <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
-                  <Calendar className="w-8 h-8 text-emerald-600" />
+                <div className="w-16 h-16 bg-cyan-100 rounded-xl flex items-center justify-center mb-4">
+                  <Calendar className="w-8 h-8 text-cyan-600" />
                 </div>
                 <p className={`font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                   Nenhuma consulta agendada ainda
@@ -208,7 +209,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                     key={index}
                     className={`p-4 rounded-lg border ${
                       darkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'
-                    } hover:border-emerald-500 transition cursor-pointer`}
+                    } hover:border-blue-500 transition cursor-pointer`}
                     onClick={() => setSelectedConsulta(consulta)}
                   >
                     <div className="flex items-start justify-between">
@@ -232,7 +233,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                           consulta.status === 'agendada'
                             ? 'bg-blue-500 text-white'
                             : consulta.status === 'concluida'
-                            ? 'bg-green-500 text-white'
+                            ? 'bg-blue-500 text-white'
                             : 'bg-red-500 text-white'
                         }`}
                       >
@@ -249,12 +250,12 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
           <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md p-6`}>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <FileText className={`w-5 h-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                <FileText className={`w-5 h-5 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                 <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>Registros Médicos</h3>
               </div>
               <button 
                 onClick={() => onNavigate('prontuario')}
-                className="text-emerald-600 text-sm font-medium hover:underline"
+                className="text-blue-600 text-sm font-medium hover:underline"
               >
                 Ver todos
               </button>
@@ -264,8 +265,8 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
               onClick={() => onNavigate('prontuario')}
               className="flex flex-col items-center justify-center py-12 cursor-pointer hover:opacity-80 transition"
             >
-              <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center mb-4">
-                <FileText className="w-8 h-8 text-emerald-600" />
+              <div className="w-16 h-16 bg-cyan-100 rounded-xl flex items-center justify-center mb-4">
+                <FileText className="w-8 h-8 text-cyan-600" />
               </div>
               <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Nenhum registro médico ainda</p>
             </div>
@@ -302,7 +303,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                     onClick={() => setFiltroStatus('todas')}
                     className={`px-4 py-2 rounded-lg font-medium transition ${
                       filtroStatus === 'todas'
-                        ? 'bg-emerald-500 text-white'
+                        ? 'bg-blue-500 text-white'
                         : darkMode
                         ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -368,7 +369,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                         key={index}
                         className={`p-5 rounded-lg border ${
                           darkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'
-                        } hover:border-emerald-500 transition cursor-pointer`}
+                        } hover:border-blue-500 transition cursor-pointer`}
                         onClick={() => {
                           setShowHistoricoModal(false)
                           setSelectedConsulta(consulta)
@@ -385,7 +386,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                                   consulta.status === 'agendada'
                                     ? 'bg-blue-500 text-white'
                                     : consulta.status === 'concluida'
-                                    ? 'bg-green-500 text-white'
+                                    ? 'bg-blue-500 text-white'
                                     : 'bg-red-500 text-white'
                                 }`}
                               >
@@ -413,8 +414,8 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                               className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
                                 consulta.tipo === 'presencial'
                                   ? darkMode
-                                    ? 'bg-emerald-900/50 text-emerald-300'
-                                    : 'bg-emerald-100 text-emerald-700'
+                                    ? 'bg-blue-900/50 text-blue-300'
+                                    : 'bg-blue-100 text-blue-700'
                                   : darkMode
                                   ? 'bg-purple-900/50 text-purple-300'
                                   : 'bg-purple-100 text-purple-700'
@@ -447,7 +448,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
               <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl flex items-center justify-center">
                       <Calendar className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -488,8 +489,8 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                       className={`px-4 py-2 rounded-full text-sm font-medium ${
                         selectedConsulta.tipo === 'presencial'
                           ? darkMode
-                            ? 'bg-emerald-900/50 text-emerald-300'
-                            : 'bg-emerald-100 text-emerald-700'
+                            ? 'bg-blue-900/50 text-blue-300'
+                            : 'bg-blue-100 text-blue-700'
                           : darkMode
                           ? 'bg-purple-900/50 text-purple-300'
                           : 'bg-purple-100 text-purple-700'
@@ -554,7 +555,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                       setSelectedConsulta(null)
                       onNavigate('consultas')
                     }}
-                    className="flex-1 px-4 py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition flex items-center justify-center gap-2"
                   >
                     Ver Todas Consultas
                     <ArrowRight className="w-4 h-4" />
@@ -572,7 +573,7 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
               <div className="p-6">
                 {/* Header com ícone */}
                 <div className="text-center mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <Clock className="w-10 h-10 text-white" />
                   </div>
                   <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -584,26 +585,26 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                 </div>
 
                 {/* Benefícios da Triagem IA */}
-                <div className={`rounded-xl p-4 mb-6 ${darkMode ? 'bg-emerald-900/20 border border-emerald-700' : 'bg-emerald-50 border border-emerald-200'}`}>
-                  <h4 className={`font-semibold mb-3 flex items-center gap-2 ${darkMode ? 'text-emerald-400' : 'text-emerald-900'}`}>
+                <div className={`rounded-xl p-4 mb-6 ${darkMode ? 'bg-blue-900/20 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
+                  <h4 className={`font-semibold mb-3 flex items-center gap-2 ${darkMode ? 'text-blue-400' : 'text-blue-900'}`}>
                     <Clock className="w-5 h-5" />
                     Nossa Triagem com IA pode te ajudar:
                   </h4>
                   <ul className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span className="text-blue-500 mt-0.5">✓</span>
                       <span><strong>Identificar a especialidade ideal</strong> baseado nos seus sintomas</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span className="text-blue-500 mt-0.5">✓</span>
                       <span><strong>Descrever melhor seu caso</strong> para o médico entender</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span className="text-blue-500 mt-0.5">✓</span>
                       <span><strong>Fazer perguntas inteligentes</strong> sobre seus sintomas</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-emerald-500 mt-0.5">✓</span>
+                      <span className="text-blue-500 mt-0.5">✓</span>
                       <span><strong>Agendar automaticamente</strong> após a triagem</span>
                     </li>
                   </ul>
@@ -616,7 +617,8 @@ export default function SITPMDashboard({ onNavigate, darkMode, consultas = [] })
                       setShowSugestaoTriagemModal(false);
                       onNavigate('triagem');
                     }}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-emerald-400 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                    className="w-full text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                    style={{ backgroundImage: 'linear-gradient(to right, #4FACFE 0%, #00F2FE 100%)' }}
                   >
                     <Clock className="w-5 h-5" />
                     Sim, usar Triagem com IA

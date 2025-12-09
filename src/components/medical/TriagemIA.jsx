@@ -496,11 +496,11 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
                   </p>
                 </div>
 
-                <div className={`rounded-lg sm:rounded-xl p-2 sm:p-6 text-center ${darkMode ? 'bg-emerald-900/30 border border-emerald-800' : 'bg-emerald-50'}`}>
-                  <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mx-auto mb-1 sm:mb-3 ${darkMode ? 'bg-emerald-800' : 'bg-emerald-100'}`}>
-                    <Calendar className={`w-4 h-4 sm:w-6 sm:h-6 ${darkMode ? 'text-emerald-300' : 'text-emerald-600'}`} />
+                <div className={`rounded-lg sm:rounded-xl p-2 sm:p-6 text-center ${darkMode ? 'bg-blue-900/30 border border-blue-800' : 'bg-blue-50'}`}>
+                  <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mx-auto mb-1 sm:mb-3 ${darkMode ? 'bg-blue-800' : 'bg-blue-100'}`}>
+                    <Calendar className={`w-4 h-4 sm:w-6 sm:h-6 ${darkMode ? 'text-blue-300' : 'text-blue-600'}`} />
                   </div>
-                  <p className={`text-[10px] sm:text-sm font-semibold ${darkMode ? 'text-emerald-200' : 'text-gray-900'}`}>
+                  <p className={`text-[10px] sm:text-sm font-semibold ${darkMode ? 'text-blue-200' : 'text-gray-900'}`}>
                     Agendamento Rápido
                   </p>
                 </div>
@@ -518,8 +518,8 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 className={`font-bold text-xs sm:text-lg truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>Assistente de Triagem</h2>
-                  <p className="text-[9px] sm:text-sm text-emerald-600 flex items-center gap-0.5">
-                    <span className="w-1 h-1 sm:w-2 sm:h-2 bg-emerald-500 rounded-full"></span>
+                  <p className="text-[9px] sm:text-sm text-blue-600 flex items-center gap-0.5">
+                    <span className="w-1 h-1 sm:w-2 sm:h-2 bg-blue-500 rounded-full"></span>
                     <span className="sm:hidden">Online</span>
                     <span className="hidden sm:inline">Online • Respondendo em tempo real</span>
                   </p>
@@ -599,7 +599,7 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
                   <div className="flex justify-center my-4">
                     <button
                       onClick={handleQueroAgendar}
-                      className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm sm:text-base"
+                      className="bg-gradient-to-r from-blue-400 to-cyan-400 text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-sm sm:text-base"
                     >
                       <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
                       Sim, quero agendar uma consulta
@@ -738,7 +738,7 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
                       EM ANDAMENTO
                     </span>
                   ) : triagem.severity === 'AGENDADA' ? (
-                    <span className="px-1.5 py-0.5 sm:px-2 bg-emerald-100 text-emerald-700 text-[10px] sm:text-xs font-bold rounded flex-shrink-0 whitespace-nowrap">
+                    <span className="px-1.5 py-0.5 sm:px-2 bg-blue-100 text-blue-700 text-[10px] sm:text-xs font-bold rounded flex-shrink-0 whitespace-nowrap">
                       ✓ AGENDADA
                     </span>
                   ) : (
@@ -747,7 +747,7 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
                         ? 'bg-red-100 text-red-700'
                         : triagem.severity === 'MÉDIA'
                         ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-green-100 text-green-700'
+                        : 'bg-blue-100 text-blue-700'
                     }`}>
                       {triagem.severity}
                     </span>
