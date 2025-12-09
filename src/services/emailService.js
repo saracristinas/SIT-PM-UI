@@ -1,5 +1,7 @@
 // Serviço de envio de emails
 
+import { calcularTempoRestante, gerarEmailLembrete, obterConfiguracaoLembrete } from './reminderService';
+
 /**
  * Simula envio de email de confirmação de consulta
  * Em produção, integrar com serviço real como SendGrid, AWS SES, etc.
@@ -437,4 +439,179 @@ export async function enviarEmailLembreteConsulta(userData, consultaData) {
       });
     }, 1000);
   });
+}
+
+/**
+ * Envia lembrete automático de consulta
+ */
+export async function sendReminderEmail(consulta, onLembreteEnviado = null) {
+  const tempoRestante = calcularTempoRestante(consulta.dataHora);
+  
+  if (tempoRestante.passado) {
+    console.log('⏰ Consulta já passou, lembrete não enviado');
+    return { success: false, reason: 'consulta_passada' };
+  }
+
+  const configuracao = obterConfiguracaoLembrete(consulta.id);
+  
+  if (!configuracao.habilitado) {
+    console.log('🔕 Lembretes desabilitados para esta consulta');
+    return { success: false, reason: 'lembretes_desabilitados' };
+  }
+
+  const userData = consulta.paciente || JSON.parse(localStorage.getItem('user') || '{}');
+
+  console.log('📧 Enviando lembrete por email real...');
+  console.log('📧 Destinatário:', userData.email);
+  console.log('📧 Tempo restante:', tempoRestante.texto);
+
+  try {
+    // Chama endpoint real do servidor
+    const response = await fetch('http://localhost:3001/api/send-reminder', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        paciente: {
+          name: userData.name || userData.nome || 'Paciente',
+          email: userData.email
+        },
+        medico: consulta.medico,
+        especialidade: consulta.especialidade,
+        dataHora: consulta.dataHora,
+        tempoRestante: tempoRestante,
+        frequencia: configuracao.frequenciaMinutos,
+        nomeClinica: 'MediCenter'
+      })
+    });
+
+    console.log('📡 Resposta do servidor:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    let result;
+    try {
+      const text = await response.text();
+      console.log('📝 Texto bruto da resposta:', text);
+      result = JSON.parse(text);
+    } catch (parseError) {
+      console.error('❌ Erro ao fazer parse de JSON:', parseError.message);
+      console.error('Resposta recebida:', await response.clone().text());
+      throw new Error(`Erro ao processar resposta do servidor: ${parseError.message}`);
+    }
+    
+    console.log('📄 Resultado do servidor:', result);
+
+    if (result.success) {
+      console.log('✅ Lembrete enviado com sucesso por email real!');
+      console.log('📬 Message ID:', result.messageId);
+      
+      // Salva histórico de lembretes enviados
+      const historico = JSON.parse(localStorage.getItem('reminderHistory') || '[]');
+      historico.push({
+        consultaId: consulta.id,
+        enviadoEm: new Date().toISOString(),
+        tempoRestante: tempoRestante.texto,
+        recipient: userData.email,
+        messageId: result.messageId
+      });
+      localStorage.setItem('reminderHistory', JSON.stringify(historico));
+      
+      // Callback para notificação no UI - SÓ se foi sucesso no servidor
+      if (onLembreteEnviado) {
+        onLembreteEnviado({
+          consultaInfo: {
+            medico: consulta.medico,
+            especialidade: consulta.especialidade,
+            dataHora: consulta.dataHora
+          },
+          tempoRestante: tempoRestante.texto,
+          tipo: tempoRestante.totalMinutos <= 60 ? 'warning' : 'success'
+        });
+      }
+      
+      return {
+        success: true,
+        messageId: result.messageId,
+        recipient: userData.email,
+        timestamp: new Date().toISOString(),
+        tempoRestante: tempoRestante.texto
+      };
+    } else {
+      throw new Error(result.message || 'Erro ao enviar lembrete');
+    }
+  } catch (error) {
+    console.error('❌ Erro ao enviar lembrete:', error.message);
+    console.error('❌ Stack:', error.stack);
+    
+    // Notifica o usuário do erro - tipo 'error' para não mostir sucesso falso
+    if (onLembreteEnviado) {
+      onLembreteEnviado({
+        consultaInfo: {
+          medico: consulta.medico,
+          especialidade: consulta.especialidade,
+          dataHora: consulta.dataHora
+        },
+        tempoRestante: tempoRestante.texto,
+        tipo: 'error',
+        mensagem: 'Erro ao enviar email: ' + error.message
+      });
+    }
+    
+    return {
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    };
+  }
+}
+
+/**
+ * Inicia sistema de lembretes automáticos para todas as consultas agendadas
+ */
+export function iniciarSistemaLembretes() {
+  console.log('🔔 Sistema de lembretes inicializado');
+  
+  // Verifica consultas a cada 1 minuto
+  setInterval(() => {
+    const consultas = JSON.parse(localStorage.getItem('consultas') || '[]');
+    const consultasAgendadas = consultas.filter(c => c.status === 'agendada');
+    
+    consultasAgendadas.forEach(async (consulta) => {
+      const config = obterConfiguracaoLembrete(consulta.id);
+      
+      if (!config.habilitado) return;
+      
+      const tempoRestante = calcularTempoRestante(consulta.dataHora);
+      
+      // Se já passou, pula
+      if (tempoRestante.passado) return;
+      
+      // Verifica se está dentro do período de antecedência
+      if (tempoRestante.horas > config.antecedenciaHoras) return;
+      
+      // Verifica último lembrete enviado
+      const historico = JSON.parse(localStorage.getItem('reminderHistory') || '[]');
+      const ultimoLembrete = historico
+        .filter(h => h.consultaId === consulta.id)
+        .sort((a, b) => new Date(b.enviadoEm) - new Date(a.enviadoEm))[0];
+      
+      // Verifica se deve enviar baseado na frequência
+      if (ultimoLembrete) {
+        const minutosDesdeUltimo = Math.floor(
+          (new Date() - new Date(ultimoLembrete.enviadoEm)) / (1000 * 60)
+        );
+        
+        if (minutosDesdeUltimo < config.frequenciaMinutos) {
+          return; // Ainda não é hora de enviar
+        }
+      }
+      
+      // Envia o lembrete
+      await sendReminderEmail(consulta);
+    });
+  }, 60000); // Verifica a cada 1 minuto
 }

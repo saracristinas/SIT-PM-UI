@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { Calendar, CheckCircle, Clock, Eye, Trash2, X, Edit2, AlertTriangle, Plus, Video, Building2, Sparkles, Filter, Search, ChevronDown, MapPin, User, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, CheckCircle, Clock, Eye, Trash2, X, Edit2, AlertTriangle, Plus, Video, Building2, Sparkles, Filter, Search, ChevronDown, MapPin, User, Check, Bell, BellOff, Settings, Mail } from 'lucide-react';
+import { 
+  calcularTempoRestante, 
+  obterConfiguracaoLembrete, 
+  salvarConfiguracaoLembrete,
+  marcarComoAtendida 
+} from '../../services/reminderService';
+import ReminderEmailPreview from '../common/ReminderEmailPreview';
 
 export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, consultas: consultasProp = [], onEditarConsulta, onExcluirConsulta }) {
   const [darkMode, setDarkMode] = useState(darkModeProp || false);
@@ -13,6 +20,20 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSugestaoTriagemModal, setShowSugestaoTriagemModal] = useState(false);
+  
+  // Estados para configuração de lembretes
+  const [showReminderConfig, setShowReminderConfig] = useState(false);
+  const [reminderConfig, setReminderConfig] = useState({
+    frequenciaMinutos: 30,
+    antecedenciaHoras: 24,
+    lembreteUrgente: 60,
+    habilitado: true
+  });
+  const [selectedConsultaForReminder, setSelectedConsultaForReminder] = useState(null);
+  
+  // Estado para preview de email
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
+  const [consultaForEmailPreview, setConsultaForEmailPreview] = useState(null);
 
   // USA AS CONSULTAS DO PROP (vindo do App.jsx) ao invés de estado local
   const consultas = consultasProp;
@@ -82,6 +103,29 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
       setEditingConsulta(null);
       setEditForm({});
     }, 1000);
+  };
+
+  // Efeito para obter configuração de lembrete ao abrir o modal de edição
+  useEffect(() => {
+    if (editingConsulta) {
+      const fetchReminderConfig = async () => {
+        const config = await obterConfiguracaoLembrete(editingConsulta.id);
+        setReminderConfig(config);
+      };
+      fetchReminderConfig();
+    }
+  }, [editingConsulta]);
+
+  // Função para salvar configuração de lembrete
+  const handleSalvarConfiguracaoLembrete = async () => {
+    setIsSaving(true);
+    const data = {
+      consultaId: editingConsulta.id,
+      ...reminderConfig
+    };
+    await salvarConfiguracaoLembrete(data);
+    setIsSaving(false);
+    setShowReminderConfig(false);
   };
 
   return (
@@ -400,6 +444,24 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                     
                     {consulta.status === 'agendada' && (
                       <>
+                        {/* Botão Configurar Lembretes */}
+                        <button
+                          onClick={() => {
+                            setSelectedConsultaForReminder(consulta);
+                            const config = obterConfiguracaoLembrete(consulta.id);
+                            setReminderConfig(config);
+                            setShowReminderConfig(true);
+                          }}
+                          className={`p-2 rounded-xl transition-all ${
+                            darkMode
+                              ? 'bg-yellow-900 text-yellow-100 hover:bg-yellow-800'
+                              : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
+                          }`}
+                          title="Configurar Lembretes"
+                        >
+                          <Bell className="w-3 h-3 sm:w-4 sm:h-4" />
+                        </button>
+                        
                         <button
                           onClick={() => {
                             setEditingConsulta(consulta);
@@ -489,6 +551,122 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                   </div>
                 </div>
 
+                {/* Contador Regressivo - Se consulta agendada */}
+                {selectedConsulta.status === 'agendada' && (() => {
+                  const tempoRestante = calcularTempoRestante(selectedConsulta.dataHora);
+                  
+                  if (tempoRestante.passado) {
+                    return (
+                      <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300 rounded-2xl p-6">
+                        <div className="text-center">
+                          <div className="text-4xl mb-2">⏰</div>
+                          <p className="text-lg font-bold text-red-700 mb-2">
+                            Horário da consulta já passou
+                          </p>
+                          <p className="text-sm text-red-600 mb-4">
+                            A consulta foi atendida?
+                          </p>
+                          <button
+                            onClick={() => {
+                              if (confirm('Confirmar que a consulta foi atendida?')) {
+                                marcarComoAtendida(selectedConsulta.id);
+                                if (onEditarConsulta) {
+                                  onEditarConsulta(selectedConsulta.id, { status: 'concluida' });
+                                }
+                                setSelectedConsulta(null);
+                              }
+                            }}
+                            className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
+                          >
+                            ✅ Sim, Marcar como Atendida
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Define cor baseada no tempo restante
+                  let bgColor = 'from-blue-50 to-cyan-50';
+                  let borderColor = 'border-blue-300';
+                  let textColor = 'text-blue-700';
+                  let urgencyIcon = '⏰';
+                  
+                  if (tempoRestante.totalMinutos <= 60) {
+                    bgColor = 'from-red-50 to-orange-50';
+                    borderColor = 'border-red-400';
+                    textColor = 'text-red-700';
+                    urgencyIcon = '🚨';
+                  } else if (tempoRestante.totalMinutos <= 180) {
+                    bgColor = 'from-orange-50 to-yellow-50';
+                    borderColor = 'border-orange-300';
+                    textColor = 'text-orange-700';
+                    urgencyIcon = '⚠️';
+                  }
+
+                  return (
+                    <div className={`bg-gradient-to-r ${bgColor} border-2 ${borderColor} rounded-2xl p-6`}>
+                      <div className="text-center">
+                        <div className="text-2xl mb-2">{urgencyIcon}</div>
+                        <p className={`text-sm font-semibold ${textColor} mb-2`}>
+                          {tempoRestante.totalMinutos <= 60 ? 'URGENTE - FALTA MENOS DE 1 HORA!' :
+                           tempoRestante.totalMinutos <= 180 ? 'ATENÇÃO - FALTAM POUCAS HORAS!' :
+                           'FALTAM'}
+                        </p>
+                        <p className={`text-5xl font-black ${textColor} mb-2`}>
+                          {tempoRestante.texto}
+                        </p>
+                        <p className={`text-sm ${textColor}`}>
+                          para sua consulta
+                        </p>
+                        
+                        {/* Lembrete de documentos */}
+                        {tempoRestante.totalMinutos <= 180 && (
+                          <div className="mt-4 pt-4 border-t-2 border-current/20">
+                            <p className={`text-xs font-semibold ${textColor} mb-2`}>
+                              📋 NÃO ESQUEÇA OS DOCUMENTOS:
+                            </p>
+                            <p className={`text-xs ${textColor}`}>
+                              RG, Cartão do convênio, Exames anteriores
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Botão Marcar como Atendida - Se consulta agendada */}
+                {selectedConsulta.status === 'agendada' && (
+                  <div className={`${darkMode ? 'bg-gray-700' : 'bg-green-50'} rounded-2xl p-5 border-2 border-green-300`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-bold text-green-700 mb-1">
+                          Consulta já foi atendida?
+                        </p>
+                        <p className="text-sm text-green-600">
+                          Marque para finalizar e parar os lembretes
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (confirm('Confirmar que a consulta foi realizada e você foi atendido(a)?')) {
+                            marcarComoAtendida(selectedConsulta.id);
+                            if (onEditarConsulta) {
+                              onEditarConsulta(selectedConsulta.id, { status: 'concluida' });
+                            }
+                            setSelectedConsulta(null);
+                            alert('✅ Consulta marcada como concluída! Os lembretes foram desativados.');
+                          }
+                        }}
+                        className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 whitespace-nowrap"
+                      >
+                        <CheckCircle className="w-5 h-5" />
+                        Marcar como Atendida
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Médico */}
                 <div className={`${darkMode ? 'bg-gray-700' : 'bg-emerald-50'} rounded-2xl p-5`}>
                   <div className="flex items-center gap-3">
@@ -572,6 +750,25 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                     {selectedConsulta.motivo}
                   </p>
                 </div>
+
+                {/* Botão para visualizar email de lembrete */}
+                {selectedConsulta.status === 'agendada' && (
+                  <div className="pt-4 border-t border-gray-200">
+                    <button
+                      onClick={() => {
+                        setConsultaForEmailPreview(selectedConsulta);
+                        setShowEmailPreview(true);
+                      }}
+                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                    >
+                      <Mail className="w-5 h-5" />
+                      Visualizar Email de Lembrete
+                    </button>
+                    <p className="text-center text-sm text-gray-500 mt-2">
+                      Veja como será o email automático enviado para você
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -700,49 +897,145 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
                   />
                 </div>
 
-                {/* Botões */}
-                <div className="flex gap-4 pt-6 border-t border-gray-200">
-                  <button
-                    onClick={() => {
-                      setEditingConsulta(null);
-                      setEditForm({});
-                    }}
-                    disabled={isSaving}
-                    className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
-                      darkMode
-                        ? 'bg-gray-700 text-white hover:bg-gray-600'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (!editForm.dataHora || !editForm.motivo) {
-                        alert('Por favor, preencha data/hora e motivo.');
-                        return;
-                      }
-                      handleEditar(editingConsulta.id, editForm);
-                    }}
-                    disabled={isSaving}
-                    className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-                      isSaving
-                        ? 'bg-emerald-300 cursor-not-allowed'
-                        : 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/40 hover:scale-105'
-                    }`}
-                  >
-                    {isSaving ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Salvando...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-5 h-5" />
-                        Salvar Alterações
-                      </>
-                    )}
-                  </button>
+                {/* Configuração de Lembrete */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className={`block text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      Lembrete da Consulta
+                    </label>
+                    <button
+                      onClick={() => setShowReminderConfig(!showReminderConfig)}
+                      className={`text-sm font-medium flex items-center gap-1 transition-all ${
+                        darkMode ? 'text-gray-300 hover:text-gray-200' : 'text-blue-600 hover:text-blue-500'
+                      }`}
+                    >
+                      {showReminderConfig ? (
+                        <>
+                          <BellOff className="w-5 h-5" />
+                          Desativar Lembrete
+                        </>
+                      ) : (
+                        <>
+                          <Bell className="w-5 h-5" />
+                          Ativar Lembrete
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {showReminderConfig && (
+                    <div className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-700'}`}>
+                            Frequência (minutos)
+                          </label>
+                          <input
+                            type="number"
+                            value={reminderConfig.frequenciaMinutos}
+                            onChange={(e) => setReminderConfig({ ...reminderConfig, frequenciaMinutos: e.target.value })}
+                            className={`w-full px-4 py-2 rounded-lg border-2 text-sm ${
+                              darkMode
+                                ? 'bg-gray-800 border-gray-700 text-white focus:border-emerald-500'
+                                : 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500'
+                            } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition`}
+                            aria-label="Frequência do lembrete em minutos"
+                          />
+                        </div>
+
+                        <div>
+                          <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-700'}`}>
+                            Antecedência (horas)
+                          </label>
+                          <input
+                            type="number"
+                            value={reminderConfig.antecedenciaHoras}
+                            onChange={(e) => setReminderConfig({ ...reminderConfig, antecedenciaHoras: e.target.value })}
+                            className={`w-full px-4 py-2 rounded-lg border-2 text-sm ${
+                              darkMode
+                                ? 'bg-gray-800 border-gray-700 text-white focus:border-emerald-500'
+                                : 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500'
+                            } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition`}
+                            aria-label="Antecedência do lembrete em horas"
+                          />
+                        </div>
+
+                        <div>
+                          <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-700'}`}>
+                            Lembrete Urgente (minutos)
+                          </label>
+                          <input
+                            type="number"
+                            value={reminderConfig.lembreteUrgente}
+                            onChange={(e) => setReminderConfig({ ...reminderConfig, lembreteUrgente: e.target.value })}
+                            className={`w-full px-4 py-2 rounded-lg border-2 text-sm ${
+                              darkMode
+                                ? 'bg-gray-800 border-gray-700 text-white focus:border-emerald-500'
+                                : 'bg-white border-gray-300 text-gray-900 focus:border-emerald-500'
+                            } focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition`}
+                            aria-label="Lembrete urgente em minutos"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={reminderConfig.habilitado}
+                            onChange={(e) => setReminderConfig({ ...reminderConfig, habilitado: e.target.checked })}
+                            className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-2 focus:ring-emerald-500/20 transition"
+                            aria-label="Habilitar lembrete"
+                          />
+                          <label className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Habilitar Lembrete
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => {
+                            setEditingConsulta(null);
+                            setEditForm({});
+                          }}
+                          disabled={isSaving}
+                          className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
+                            darkMode
+                              ? 'bg-gray-700 text-white hover:bg-gray-600'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (!editForm.dataHora || !editForm.motivo) {
+                              alert('Por favor, preencha data/hora e motivo.');
+                              return;
+                            }
+                            handleEditar(editingConsulta.id, editForm);
+                          }}
+                          disabled={isSaving}
+                          className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                            isSaving
+                              ? 'bg-emerald-300 cursor-not-allowed'
+                              : 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/40 hover:scale-105'
+                          }`}
+                        >
+                          {isSaving ? (
+                            <>
+                              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              Salvando...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-5 h-5" />
+                              Salvar Alterações
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -752,7 +1045,7 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
         {/* Modal de Confirmação de Exclusão */}
         {deletingConsulta && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-3xl shadow-2xl max-w-lg w-full`}>
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl max-w-lg w-full`}>
               <div className="p-6">
                 <div className="flex items-start gap-4 mb-6">
                   <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center flex-shrink-0">
@@ -932,6 +1225,215 @@ export default function MinhasConsultas({ darkMode: darkModeProp, onNavigate, co
               </div>
             </div>
           </div>
+        )}
+
+        {/* Modal de Configuração de Lembretes */}
+        {showReminderConfig && selectedConsultaForReminder && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className={`max-w-2xl w-full rounded-3xl shadow-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+              {/* Header */}
+              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-6 rounded-t-3xl">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                    <Bell className="w-6 h-6" />
+                    Configurar Lembretes
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setShowReminderConfig(false);
+                      setSelectedConsultaForReminder(null);
+                    }}
+                    className="p-2 bg-white/20 backdrop-blur-md rounded-xl hover:bg-white/30 transition"
+                  >
+                    <X className="w-6 h-6 text-white" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Contador Regressivo */}
+                {(() => {
+                  const tempoRestante = calcularTempoRestante(selectedConsultaForReminder.dataHora);
+                  return !tempoRestante.passado && (
+                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-6 text-center">
+                      <div className="text-sm font-semibold text-blue-600 mb-2">
+                        ⏰ FALTAM
+                      </div>
+                      <div className="text-4xl font-black text-blue-700 mb-2">
+                        {tempoRestante.texto}
+                      </div>
+                      <div className="text-sm text-blue-600">
+                        para sua consulta com {selectedConsultaForReminder.medico}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Ativar/Desativar Lembretes */}
+                <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-2xl p-5`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {reminderConfig.habilitado ? (
+                        <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                          <Bell className="w-6 h-6 text-white" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-400 rounded-xl flex items-center justify-center">
+                          <BellOff className="w-6 h-6 text-white" />
+                        </div>
+                      )}
+                      <div>
+                        <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          Lembretes por Email
+                        </p>
+                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {reminderConfig.habilitado ? 'Ativado' : 'Desativado'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setReminderConfig(prev => ({ ...prev, habilitado: !prev.habilitado }))}
+                      className={`relative w-16 h-8 rounded-full transition-all ${
+                        reminderConfig.habilitado ? 'bg-blue-500' : 'bg-gray-300'
+                      }`}
+                    >
+                      <div className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform ${
+                        reminderConfig.habilitado ? 'translate-x-9' : 'translate-x-1'
+                      }`} />
+                    </button>
+                  </div>
+                </div>
+
+                {reminderConfig.habilitado && (
+                  <>
+                    {/* Frequência de Lembretes */}
+                    <div className={`${darkMode ? 'bg-gray-700' : 'bg-blue-50'} rounded-2xl p-5`}>
+                      <label className={`block font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        📬 Receber lembretes a cada:
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {[5, 15, 30, 60].map(minutos => (
+                          <button
+                            key={minutos}
+                            onClick={() => setReminderConfig(prev => ({ ...prev, frequenciaMinutos: minutos }))}
+                            className={`p-4 rounded-xl font-semibold transition-all ${
+                              reminderConfig.frequenciaMinutos === minutos
+                                ? 'bg-blue-500 text-white shadow-lg scale-105'
+                                : darkMode
+                                ? 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
+                            }`}
+                          >
+                            <div className="text-2xl font-black">{minutos}</div>
+                            <div className="text-xs">minutos</div>
+                          </button>
+                        ))}
+                      </div>
+                      <p className={`text-sm mt-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        💡 Você receberá um email a cada {reminderConfig.frequenciaMinutos} minutos lembrando da consulta
+                      </p>
+                    </div>
+
+                    {/* Antecedência para começar */}
+                    <div className={`${darkMode ? 'bg-gray-700' : 'bg-cyan-50'} rounded-2xl p-5`}>
+                      <label className={`block font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        ⏳ Começar a enviar lembretes com:
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {[1, 6, 12, 24].map(horas => (
+                          <button
+                            key={horas}
+                            onClick={() => setReminderConfig(prev => ({ ...prev, antecedenciaHoras: horas }))}
+                            className={`p-4 rounded-xl font-semibold transition-all ${
+                              reminderConfig.antecedenciaHoras === horas
+                                ? 'bg-cyan-500 text-white shadow-lg scale-105'
+                                : darkMode
+                                ? 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                : 'bg-white text-gray-700 hover:bg-gray-100 border-2 border-gray-200'
+                            }`}
+                          >
+                            <div className="text-2xl font-black">{horas}</div>
+                            <div className="text-xs">hora{horas > 1 ? 's' : ''}</div>
+                          </button>
+                        ))}
+                      </div>
+                      <p className={`text-sm mt-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        📢 Os lembretes começarão {reminderConfig.antecedenciaHoras} hora{reminderConfig.antecedenciaHoras > 1 ? 's' : ''} antes da consulta
+                      </p>
+                    </div>
+
+                    {/* Documentos obrigatórios */}
+                    <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-2xl p-5">
+                      <h4 className="font-bold text-yellow-900 mb-3 flex items-center gap-2">
+                        📋 Documentos Necessários
+                      </h4>
+                      <p className="text-sm text-yellow-800 mb-3">
+                        Todos os lembretes incluirão a lista de documentos obrigatórios:
+                      </p>
+                      <ul className="space-y-2 text-sm text-yellow-900">
+                        <li className="flex items-center gap-2">
+                          <span className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-xs font-bold">✓</span>
+                          Documento de identidade (RG ou CNH)
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-xs font-bold">✓</span>
+                          Cartão do convênio (se aplicável)
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-xs font-bold">✓</span>
+                          Pedido médico ou exames anteriores
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-xs font-bold">✓</span>
+                          Lista de medicamentos em uso
+                        </li>
+                      </ul>
+                    </div>
+                  </>
+                )}
+
+                {/* Botões de ação */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowReminderConfig(false);
+                      setSelectedConsultaForReminder(null);
+                    }}
+                    className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
+                      darkMode
+                        ? 'bg-gray-700 text-white hover:bg-gray-600'
+                        : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                    }`}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={() => {
+                      salvarConfiguracaoLembrete(selectedConsultaForReminder.id, reminderConfig);
+                      setShowReminderConfig(false);
+                      setSelectedConsultaForReminder(null);
+                      alert('✅ Configurações de lembrete salvas com sucesso!');
+                    }}
+                    className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
+                  >
+                    Salvar Configurações
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Preview do Email de Lembrete */}
+        {showEmailPreview && consultaForEmailPreview && (
+          <ReminderEmailPreview
+            darkMode={darkMode}
+            consulta={consultaForEmailPreview}
+            onClose={() => {
+              setShowEmailPreview(false);
+              setConsultaForEmailPreview(null);
+            }}
+          />
         )}
       </div>
     </div>

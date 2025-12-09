@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { Check, Menu, X, Moon, HeartPulse } from 'lucide-react'
 import Sidebar from './components/common/Sidebar'
+import NotificacaoLembrete from './components/common/NotificacaoLembrete'
+import ModalConfigurarLembretePosAgendamento from './components/common/ModalConfigurarLembretePosAgendamento'
+import ModalConfirmarAtendimento from './components/common/ModalConfirmarAtendimento'
 import SITPMDashboard from './components/dashboard/SITPMDashboard'
 import TriagemIA from './components/medical/TriagemIA'
 import Agendar from './components/scheduling/Agendar'
 import Consultas from './components/scheduling/Consultas'
 import Prontuario from './components/medical/Prontuario'
 import Auth from './components/auth/Auth'
+import { salvarConfiguracaoLembrete, agendarLembretes, deveEnviarLembrete, obterConfiguracaoLembrete } from './services/reminderService'
+import { sendReminderEmail } from './services/emailService'
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false)
@@ -17,10 +22,17 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [consultasPendentes, setConsultasPendentes] = useState([]) // Consultas passadas pendentes de confirmação
+  const [consultasPendentes, setConsultasPendentes] = useState([])
   const [showConfirmacaoModal, setShowConfirmacaoModal] = useState(false)
+  
+  // Notificações de lembretes
+  const [notificacaoLembrete, setNotificacaoLembrete] = useState(null)
+  const [showReminderConfig, setShowReminderConfig] = useState(false)
+  const [consultaParaConfigurar, setConsultaParaConfigurar] = useState(null)
+  const [showConfirmacaoAtendimento, setShowConfirmacaoAtendimento] = useState(false)
+  const [consultaParaConfirmar, setConsultaParaConfirmar] = useState(null)
 
-  // Verifica se há um usuário logado ao carregar o app
+  // Carrega consultas do localStorage ao inicializar o app
   useEffect(() => {
     const storedUser = localStorage.getItem('user')
     if (storedUser) {
@@ -32,7 +44,7 @@ export default function App() {
       }
     }
     
-    // Carrega consultas do localStorage
+    // Carrega consultas do localStorage - Estas serão persistidas enquanto o usuário estiver logado
     const storedConsultas = localStorage.getItem('consultas')
     if (storedConsultas) {
       try {
@@ -50,10 +62,11 @@ export default function App() {
     setIsLoading(false)
   }, [])
 
-  // Salva consultas no localStorage sempre que mudar
+  // Salva consultas no localStorage sempre que mudam
+  // Isto garante que as consultas agendadas NÃO desapareçam ao atualizar a página
   useEffect(() => {
     localStorage.setItem('consultas', JSON.stringify(consultas))
-    console.log('📝 Consultas salvas no localStorage:', consultas.length)
+    console.log('📝 Consultas persistidas no localStorage:', consultas.length)
   }, [consultas])
 
   // Verifica consultas passadas que precisam de confirmação
@@ -68,6 +81,11 @@ export default function App() {
     if (consultasPassadas.length > 0) {
       setConsultasPendentes(consultasPassadas);
       setShowConfirmacaoModal(true);
+      
+      // Mostra notificação de confirmação para a primeira consulta vencida não confirmada
+      const primeiraPassada = consultasPassadas[0];
+      setConsultaParaConfirmar(primeiraPassada);
+      setShowConfirmacaoAtendimento(true);
     }
   }, [consultas, currentPage]); // Verifica quando mudar de página
 
@@ -119,7 +137,11 @@ export default function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('user')
+    localStorage.removeItem('consultas')
+    localStorage.removeItem('reminderConfig')
+    localStorage.removeItem('reminderHistory')
     setUser(null)
+    setConsultas([])
     setCurrentPage('inicio')
     setToastMessage({
       title: 'Você saiu do sistema',
@@ -132,12 +154,46 @@ export default function App() {
   }
 
   const handleAgendarConsulta = (novaConsulta) => {
-    setConsultas([...consultas, novaConsulta])
+    const consultaComId = {
+      ...novaConsulta,
+      id: novaConsulta.id || `consulta_${Date.now()}`,
+      status: 'agendada',
+      paciente: user
+    };
+
+    // Atualiza o estado (que automaticamente salva no localStorage via useEffect)
+    setConsultas([...consultas, consultaComId])
+    
+    // Configura lembretes automáticos para a consulta
+    const configPadrao = {
+      frequenciaMinutos: 30,
+      antecedenciaHoras: 24,
+      lembreteUrgente: 60,
+      habilitado: true
+    };
+    salvarConfiguracaoLembrete(consultaComId.id, configPadrao);
+    
+    // Agenda os lembretes
+    const lembretes = agendarLembretes(consultaComId, configPadrao);
+    console.log('📅 Lembretes agendados para consulta:', {
+      consultaId: consultaComId.id,
+      medico: consultaComId.medico,
+      dataHora: consultaComId.dataHora,
+      lembretes: lembretes.length,
+      proximoLembrete: lembretes[0]?.dataEnvio
+    });
+
+    // Inicia sistema de envio automático de lembretes (a cada 1 minuto)
+    iniciarSistemaLembretes();
+    
+    // Mostrar modal de configuração de lembretes
+    setConsultaParaConfigurar(consultaComId);
+    setShowReminderConfig(true);
     
     // Mostrar toast
     setToastMessage({
       title: 'Consulta agendada com sucesso!',
-      subtitle: 'Sua consulta foi registrada.'
+      subtitle: `Você receberá lembretes a cada 30 minutos começando 24h antes da consulta.`
     })
     setShowSuccessToast(true)
     
@@ -146,6 +202,86 @@ export default function App() {
       setShowSuccessToast(false)
     }, 5000)
   }
+
+  // Sistema de lembretes automáticos
+  const iniciarSistemaLembretes = () => {
+    // Limpa intervalo anterior se existir
+    if (window.lembretesInterval) {
+      clearInterval(window.lembretesInterval)
+    }
+
+    // Verifica a cada 1 minuto se deve enviar lembretes
+    window.lembretesInterval = setInterval(async () => {
+      const consultasArmazenadas = JSON.parse(localStorage.getItem('consultas') || '[]');
+      const consultasAgendadas = consultasArmazenadas.filter(c => c.status === 'agendada');
+      
+      console.log('🔍 Verificando lembretes... Consultas agendadas:', consultasAgendadas.length);
+      
+      for (const consulta of consultasAgendadas) {
+        try {
+          // Obtém configuração de lembrete para esta consulta
+          const configuracao = obterConfiguracaoLembrete(consulta.id);
+          
+          // Obtém histórico de lembretes
+          const historicoLembretes = JSON.parse(localStorage.getItem(`lembrete_enviado_${consulta.id}`) || 'null');
+          
+          // Verifica se deve enviar baseado na frequência
+          if (deveEnviarLembrete(historicoLembretes, configuracao.frequenciaMinutos)) {
+            console.log(`📤 Enviando lembrete para consulta ${consulta.id} (frequência: ${configuracao.frequenciaMinutos}min)`);
+            
+            const resultado = await sendReminderEmail(consulta, (notificacao) => {
+              console.log('📬 Callback recebido:', notificacao);
+              // Mostra notificação no UI quando lembrete é enviado
+              setNotificacaoLembrete({
+                ...notificacao,
+                mensagem: `📧 Email de lembrete enviado! Faltam ${notificacao.tempoRestante} para sua consulta com ${notificacao.consultaInfo.medico}.`
+              });
+            });
+            
+            // Salva timestamp do último lembrete enviado
+            if (resultado.success) {
+              localStorage.setItem(`lembrete_enviado_${consulta.id}`, new Date().toISOString());
+              console.log('✅ Lembrete processado com sucesso');
+            }
+          } else {
+            console.log(`⏭️ Pulando lembrete para ${consulta.medico} (aguardando frequência de ${configuracao.frequenciaMinutos}min)`);
+          }
+        } catch (error) {
+          console.error('❌ Erro ao enviar lembrete para', consulta.medico, ':', error);
+          console.error('Stack completo:', error.stack);
+          
+          // Mostra notificação de erro
+          setNotificacaoLembrete({
+            consultaInfo: {
+              medico: consulta.medico,
+              especialidade: consulta.especialidade,
+              dataHora: consulta.dataHora
+            },
+            tempoRestante: '---',
+            tipo: 'error',
+            mensagem: `❌ Erro ao enviar lembrete: ${error.message}`
+          });
+        }
+      }
+    }, 60000); // Verifica a cada 1 minuto
+  };
+
+  // Inicia sistema de lembretes ao carregar o app
+  useEffect(() => {
+    const consultasArmazenadas = JSON.parse(localStorage.getItem('consultas') || '[]');
+    const temConsultasAgendadas = consultasArmazenadas.some(c => c.status === 'agendada');
+    
+    if (temConsultasAgendadas) {
+      iniciarSistemaLembretes();
+    }
+
+    // Limpa o intervalo ao desmontar o componente
+    return () => {
+      if (window.lembretesInterval) {
+        clearInterval(window.lembretesInterval)
+      }
+    }
+  }, [])
 
   const handleEditarConsulta = (consultaId, dadosAtualizados) => {
     setConsultas(consultas.map(consulta => 
@@ -329,6 +465,57 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Notificação de Lembrete */}
+      {notificacaoLembrete && (
+        <NotificacaoLembrete
+          mensagem={notificacaoLembrete.mensagem}
+          tipo={notificacaoLembrete.tipo || 'success'}
+          consultaInfo={notificacaoLembrete.consultaInfo}
+          onClose={() => setNotificacaoLembrete(null)}
+          duracao={8000}
+        />
+      )}
+
+      {/* Modal de Configurar Lembrete após Agendamento */}
+      {showReminderConfig && consultaParaConfigurar && (
+        <ModalConfigurarLembretePosAgendamento
+          consulta={consultaParaConfigurar}
+          darkMode={darkMode}
+          onClose={() => {
+            setShowReminderConfig(false);
+            setConsultaParaConfigurar(null);
+          }}
+          onSave={(config) => {
+            console.log('✅ Lembretes configurados:', config);
+          }}
+        />
+      )}
+
+      {/* Modal de Confirmar Atendimento */}
+      {showConfirmacaoAtendimento && consultaParaConfirmar && (
+        <ModalConfirmarAtendimento
+          consulta={consultaParaConfirmar}
+          darkMode={darkMode}
+          onClose={() => {
+            setShowConfirmacaoAtendimento(false);
+            setConsultaParaConfirmar(null);
+          }}
+          onConfirm={(consultaId) => {
+            // Atualiza a consulta para concluída
+            setConsultas(consultas.map(c => 
+              c.id === consultaId ? { ...c, status: 'concluida' } : c
+            ));
+            
+            setToastMessage({
+              title: '✅ Consulta marcada como concluída!',
+              subtitle: 'Os lembretes foram desativados.'
+            });
+            setShowSuccessToast(true);
+            setTimeout(() => setShowSuccessToast(false), 5000);
+          }}
+        />
       )}
 
       {/* Modal de Confirmação de Comparecimento */}

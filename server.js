@@ -395,6 +395,317 @@ ${nomeClinica || 'MediCenter'} - Sistema Inteligente de Triagem
   }
 });
 
+// Rota para enviar lembretes de consulta
+app.post('/api/send-reminder', async (req, res) => {
+  try {
+    const { paciente, medico, especialidade, dataHora, tempoRestante, frequencia, nomeClinica } = req.body;
+
+    // Validação básica
+    if (!paciente || !paciente.email || !medico || !dataHora) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dados incompletos para envio de lembrete'
+      });
+    }
+
+    console.log('📬 Preparando envio de lembrete...');
+    console.log('📬 Destinatário:', paciente.email);
+    console.log('📬 Médico:', medico);
+
+    // Cria transportador
+    const transporter = createTransporter();
+
+    // Verifica conexão SMTP
+    await transporter.verify();
+    console.log('✅ Servidor SMTP conectado para lembrete');
+
+    // Determina cor da urgência
+    let corUrgencia = '#4FACFE'; // azul normal
+    let textoUrgencia = 'Consulta Agendada';
+    
+    if (tempoRestante && tempoRestante.totalMinutos <= 180) {
+      corUrgencia = '#FF9500'; // laranja < 3h
+      textoUrgencia = '⚠️ CONSULTA EM BREVE!';
+    }
+    if (tempoRestante && tempoRestante.totalMinutos <= 60) {
+      corUrgencia = '#EF4444'; // vermelho < 1h
+      textoUrgencia = '🚨 CONSULTA MUITO EM BREVE!';
+    }
+
+    // Gera HTML do email de lembrete
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lembrete de Consulta</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, ${corUrgencia} 0%, #00F2FE 100%);
+      padding: 40px 20px;
+      text-align: center;
+      color: white;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      margin: 10px 0 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .content {
+      padding: 40px;
+    }
+    .greeting {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    .info-box {
+      background: #f0f9ff;
+      border-left: 4px solid ${corUrgencia};
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e7ff;
+      font-size: 15px;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      color: #666;
+      font-weight: 600;
+    }
+    .info-value {
+      color: #333;
+      font-weight: 700;
+    }
+    .countdown {
+      background: linear-gradient(135deg, #FEF08A 0%, #FCD34D 100%);
+      border: 2px solid #FBBF24;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .countdown-title {
+      font-size: 12px;
+      color: #92400E;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .countdown-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: #B45309;
+    }
+    .documents {
+      background: #FFFBEB;
+      border: 2px solid #FCD34D;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .documents-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #92400E;
+      margin-bottom: 12px;
+    }
+    .documents-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .documents-list li {
+      padding: 8px 0;
+      font-size: 14px;
+      color: #78350F;
+    }
+    .documents-list li:before {
+      content: "✅ ";
+      margin-right: 8px;
+      font-weight: 700;
+    }
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      margin: 20px auto;
+      text-align: center;
+      width: 200px;
+    }
+    .footer {
+      background: #f8fafc;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      border-top: 1px solid #e2e8f0;
+    }
+    .footer p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>${textoUrgencia}</h1>
+      <p>Você tem uma consulta agendada</p>
+    </div>
+    
+    <div class="content">
+      <div class="greeting">
+        Olá <strong>${paciente.name || 'Paciente'}</strong>,
+        <br><br>
+        Este é um lembrete automático de sua consulta agendada. Verifique os detalhes abaixo:
+      </div>
+
+      <div class="info-box">
+        <div class="info-row">
+          <span class="info-label">👨‍⚕️ MÉDICO:</span>
+          <span class="info-value">${medico}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">🏥 ESPECIALIDADE:</span>
+          <span class="info-value">${especialidade}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">📅 DATA:</span>
+          <span class="info-value">${new Date(dataHora).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">⏰ HORÁRIO:</span>
+          <span class="info-value">${new Date(dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      </div>
+
+      ${tempoRestante && tempoRestante.texto ? `
+      <div class="countdown">
+        <div class="countdown-title">⏱️ FALTA PARA SUA CONSULTA</div>
+        <div class="countdown-text">${tempoRestante.texto}</div>
+      </div>
+      ` : ''}
+
+      <div class="documents">
+        <div class="documents-title">📋 Documentos Necessários</div>
+        <ul class="documents-list">
+          <li>Documento de identidade (RG ou CNH)</li>
+          <li>Cartão do convênio (se aplicável)</li>
+          <li>Pedido médico ou exames anteriores</li>
+          <li>Lista de medicamentos em uso</li>
+        </ul>
+      </div>
+
+      <div style="text-align: center; margin: 20px 0;">
+        <p style="font-size: 13px; color: #666;">
+          ⏰ Chegue com <strong>15 minutos de antecedência</strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p><strong>${nomeClinica || 'MediCenter'}</strong> - Sistema Inteligente de Triagem</p>
+      <p>Este é um email automático. Não responda diretamente.</p>
+      <p>Enviado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    // Configurações do email
+    const mailOptions = {
+      from: {
+        name: process.env.EMAIL_FROM_NAME || 'MediCenter - Lembretes',
+        address: process.env.SMTP_USER
+      },
+      to: paciente.email,
+      subject: `⏰ Lembrete: Consulta com ${medico} em ${new Date(dataHora).toLocaleDateString('pt-BR')}`,
+      html: htmlContent,
+      text: `
+LEMBRETE DE CONSULTA
+
+Olá ${paciente.name},
+
+Você tem uma consulta agendada:
+
+Médico: ${medico}
+Especialidade: ${especialidade}
+Data: ${new Date(dataHora).toLocaleDateString('pt-BR')}
+Horário: ${new Date(dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+
+Documentos necessários:
+✅ Documento de identidade (RG ou CNH)
+✅ Cartão do convênio (se aplicável)
+✅ Pedido médico ou exames anteriores
+✅ Lista de medicamentos em uso
+
+Chegue com 15 minutos de antecedência.
+
+${nomeClinica || 'MediCenter'} - Sistema Inteligente de Triagem
+      `
+    };
+
+    // Envia o email
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log('✅ Lembrete enviado com sucesso!');
+    console.log('📬 Message ID:', info.messageId);
+
+    res.json({
+      success: true,
+      message: 'Lembrete enviado com sucesso',
+      messageId: info.messageId,
+      recipient: paciente.email,
+      medico: medico,
+      dataHora: dataHora,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao enviar lembrete:', error);
+    
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao enviar lembrete',
+      error: error.message
+    });
+  }
+});
+
 // Rota de teste
 app.get('/api/test', (req, res) => {
   res.json({ 
