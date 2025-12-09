@@ -92,15 +92,27 @@ export default function Login({ darkMode = false, onSwitchToCadastro, onLoginSuc
       
       // Verifica se o email já está registrado
       const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-      const userExists = registeredUsers.find(u => u.email.toLowerCase() === decoded.email.toLowerCase());
+      let userExists = registeredUsers.find(u => u.email.toLowerCase() === decoded.email.toLowerCase());
       
+      // Se o usuário não existe, cria automaticamente
       if (!userExists) {
-        setMessage({ 
-          type: 'error', 
-          text: 'Email não cadastrado. Por favor, crie uma conta primeiro.' 
-        });
-        setShowCadastroPrompt(true);
-        return;
+        const newGoogleUser = {
+          id: decoded.sub,
+          name: decoded.name,
+          email: decoded.email,
+          phone: '',
+          birthDate: '',
+          avatar: decoded.picture,
+          provider: 'google',
+          createdAt: new Date().toISOString()
+        };
+        
+        // Adiciona o novo usuário à lista de registrados
+        registeredUsers.push(newGoogleUser);
+        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+        userExists = newGoogleUser;
+        
+        console.log('🆕 Nova conta criada automaticamente via Google:', newGoogleUser.email);
       }
       
       const googleUser = {
