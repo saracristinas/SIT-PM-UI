@@ -222,8 +222,9 @@ export default function App() {
           // Obtém configuração de lembrete para esta consulta
           const configuracao = obterConfiguracaoLembrete(consulta.id);
           
-          // Obtém histórico de lembretes
-          const historicoLembretes = JSON.parse(localStorage.getItem(`lembrete_enviado_${consulta.id}`) || 'null');
+          // Obtém histórico de lembretes (timestamp do último envio)
+          const historicoLembretesStr = localStorage.getItem(`lembrete_enviado_${consulta.id}`);
+          const historicoLembretes = historicoLembretesStr ? new Date(historicoLembretesStr) : null;
           
           // Verifica se deve enviar baseado na frequência
           if (deveEnviarLembrete(historicoLembretes, configuracao.frequenciaMinutos)) {

@@ -496,10 +496,16 @@ export async function sendReminderEmail(consulta, onLembreteEnviado = null) {
     try {
       const text = await response.text();
       console.log('📝 Texto bruto da resposta:', text);
-      result = JSON.parse(text);
+      
+      // Tira espaços em branco e caracteres inválidos no início
+      const cleanText = text.trim();
+      if (!cleanText) {
+        throw new Error('Resposta vazia do servidor');
+      }
+      
+      result = JSON.parse(cleanText);
     } catch (parseError) {
       console.error('❌ Erro ao fazer parse de JSON:', parseError.message);
-      console.error('Resposta recebida:', await response.clone().text());
       throw new Error(`Erro ao processar resposta do servidor: ${parseError.message}`);
     }
     
