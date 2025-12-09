@@ -398,7 +398,7 @@ ${nomeClinica || 'MediCenter'} - Sistema Inteligente de Triagem
 // Rota para enviar lembretes de consulta
 app.post('/api/send-reminder', async (req, res) => {
   try {
-    const { paciente, medico, especialidade, dataHora, tempoRestante, frequencia, nomeClinica } = req.body;
+    const { paciente, medico, especialidade, dataHora, tempoRestante, frequencia, nomeClinica, linkSalaOnline } = req.body;
 
     // Validação básica
     if (!paciente || !paciente.email || !medico || !dataHora) {
@@ -610,6 +610,12 @@ app.post('/api/send-reminder', async (req, res) => {
           <span class="info-label">⏰ HORÁRIO:</span>
           <span class="info-value">${new Date(dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
+        ${linkSalaOnline ? `
+        <div class="info-row" style="background: #DBEAFE; margin-top: 10px; padding: 15px; border-radius: 8px;">
+          <span class="info-label">💻 LINK DA SALA VIRTUAL:</span>
+          <span class="info-value"><a href="${linkSalaOnline}" style="color: #2563EB; font-weight: 700; text-decoration: none;">Clique aqui para entrar</a></span>
+        </div>
+        ` : ''}
       </div>
 
       ${tempoRestante && tempoRestante.texto ? `

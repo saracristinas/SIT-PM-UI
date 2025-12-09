@@ -117,6 +117,11 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
       const data = `${ano}-${mes}-${dia}`;
       const hora = dateTime.toTimeString().split(' ')[0].substring(0, 5);
       
+      // Define link da sala virtual para consultas online
+      const linkSalaOnline = formData.type === 'online' 
+        ? 'https://meet.google.com/tqf-txzf-pwb' 
+        : '';
+      
       // Criar objeto de consulta
       const novaConsulta = {
         id: Date.now(),
@@ -128,7 +133,9 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
         hora: hora,
         tipo: formData.type,
         status: 'agendada',
-        motivo: formData.motivo
+        motivo: formData.motivo,
+        linkSalaOnline,
+        local: formData.type === 'online' ? 'Sala virtual (Google Meet)' : 'Clínica - A definir'
       };
 
       // Simula processamento
@@ -153,8 +160,12 @@ export default function AgendarConsulta({ darkMode, onNavigate, onAgendarConsult
         onAgendarConsulta(novaConsulta);
       }
       
-      // Mostrar notificação de email enviado
-      showNotification('success', `📧 Email de confirmação enviado para ${userData.email || 'seu email'}`);
+      // Mostrar notificação de email enviado com link da sala (se online)
+      if (formData.type === 'online') {
+        showNotification('success', `📧 Email enviado para ${userData.email || 'seu email'}. Link da sala: ${linkSalaOnline}`);
+      } else {
+        showNotification('success', `📧 Email de confirmação enviado para ${userData.email || 'seu email'}`);
+      }
       
       // Redirecionar para Consultas após 2 segundos
       setTimeout(() => {
