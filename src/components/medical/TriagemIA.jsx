@@ -9,7 +9,11 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
   const [activeTriagemId, setActiveTriagemId] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [showTriagensSidebar, setShowTriagensSidebar] = useState(false);
-  const [triagens, setTriagens] = useState([]);
+  const [triagens, setTriagens] = useState(() => {
+    // Carrega triagens salvas do localStorage
+    const savedTriagens = localStorage.getItem('triagens');
+    return savedTriagens ? JSON.parse(savedTriagens) : [];
+  });
   const [mostrarCalendario, setMostrarCalendario] = useState(false);
   const [especialidadeRecomendada, setEspecialidadeRecomendada] = useState(null);
   const messagesEndRef = useRef(null);
@@ -24,6 +28,14 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
   useEffect(() => {
     scrollToBottom();
   }, [activeTriagem?.messages, isTyping]);
+
+  // Salva triagens no localStorage sempre que houver mudança
+  useEffect(() => {
+    if (triagens.length > 0) {
+      localStorage.setItem('triagens', JSON.stringify(triagens));
+      console.log('💾 Triagens salvas no localStorage:', triagens.length);
+    }
+  }, [triagens]);
 
   const handleNovaTriagem = async () => {
     const now = new Date();
@@ -67,6 +79,8 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
     e.stopPropagation();
     const updatedTriagens = triagens.filter(t => t.id !== id);
     setTriagens(updatedTriagens);
+    // Atualiza localStorage
+    localStorage.setItem('triagens', JSON.stringify(updatedTriagens));
     if (activeTriagemId === id) {
       setActiveTriagemId(null);
     }
@@ -186,21 +200,55 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
       // Envia o email de confirmação com o nome da clínica
       const sucesso = await enviarEmailConsultaAgendada(userData, dadosConsulta, nomeClinica);
 
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      // Adiciona mensagem de confirmação no chat
+      const mensagemConfirmacao = {
+        id: activeTriagem.messages.length + 1,
+        type: 'bot',
+        text: sucesso 
+          ? `✅ **Consulta agendada com sucesso!**\n\n📅 Data: ${new Date(dadosConsulta.data).toLocaleDateString('pt-BR')}\n⏰ Horário: ${dadosConsulta.hora}\n🏥 Especialidade: ${dadosConsulta.especialidade}\n\nUm email de confirmação foi enviado para ${userData.email}.\n\nObrigado por usar nossos serviços! 😊`
+          : `✅ **Consulta agendada!**\n\n📅 Data: ${new Date(dadosConsulta.data).toLocaleDateString('pt-BR')}\n⏰ Horário: ${dadosConsulta.hora}\n🏥 Especialidade: ${dadosConsulta.especialidade}\n\nSua consulta foi registrada com sucesso!`,
+        time: timeStr
+      };
+
+      // Atualiza triagem com a mensagem de confirmação
+      setTriagens(prev => prev.map(t => 
+        t.id === activeTriagemId 
+          ? { ...t, messages: [...t.messages, mensagemConfirmacao], status: 'FINALIZADA', severity: 'AGENDADA' }
+          : t
+      ));
+
       if (sucesso) {
         console.log('✅ Email de confirmação enviado com sucesso!');
       }
-
-      // Finaliza a triagem
-      handleFinalizarTriagem(activeTriagemId, 'AGENDADA');
       
-      // Fecha o calendário após 5 segundos
+      // Fecha o calendário após 3 segundos
       setTimeout(() => {
         setMostrarCalendario(false);
         setEspecialidadeRecomendada(null);
-      }, 5000);
+      }, 3000);
 
     } catch (error) {
       console.error('Erro ao agendar consulta:', error);
+      
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      // Adiciona mensagem de erro no chat
+      const mensagemErro = {
+        id: activeTriagem.messages.length + 1,
+        type: 'bot',
+        text: `❌ **Erro ao agendar consulta**\n\nDesculpe, ocorreu um erro ao tentar agendar sua consulta. Por favor, tente novamente ou entre em contato conosco.`,
+        time: timeStr
+      };
+
+      setTriagens(prev => prev.map(t => 
+        t.id === activeTriagemId 
+          ? { ...t, messages: [...t.messages, mensagemErro] }
+          : t
+      ));
     }
   };
 
@@ -683,6 +731,10 @@ export default function TriagemIA({ darkMode = false, onAgendarConsulta }) {
                   {triagem.status === 'EM_ANDAMENTO' ? (
                     <span className="px-1.5 py-0.5 sm:px-2 bg-blue-100 text-blue-700 text-[10px] sm:text-xs font-bold rounded flex-shrink-0 whitespace-nowrap">
                       EM ANDAMENTO
+                    </span>
+                  ) : triagem.severity === 'AGENDADA' ? (
+                    <span className="px-1.5 py-0.5 sm:px-2 bg-emerald-100 text-emerald-700 text-[10px] sm:text-xs font-bold rounded flex-shrink-0 whitespace-nowrap">
+                      ✓ AGENDADA
                     </span>
                   ) : (
                     <span className={`px-1.5 py-0.5 sm:px-2 text-[10px] sm:text-xs font-bold rounded flex-shrink-0 ${
